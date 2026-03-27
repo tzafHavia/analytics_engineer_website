@@ -15,7 +15,7 @@ export default function PaymentsPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/payments?limit=${LIMIT}&page=${p}`);
+      const res = await fetch(`/api/payments`);
       const json = await res.json();
       if (!res.ok || json.error) {
         setError(json.error || 'Failed to load payments');
@@ -48,7 +48,7 @@ export default function PaymentsPage() {
           <span className="page-title-accent">Payments</span> Dashboard
         </h1>
         <p className="page-desc">
-          Live data from <code>shlomy_store.payments_complete</code>
+          Live data from <code>store_pipeline.stg_fact_sales</code>
           {meta && ` — ${meta.total?.toLocaleString()} total records`}
         </p>
       </div>

@@ -13,6 +13,8 @@ function formatCurrency(v) {
 
 function formatDate(v) {
   if (!v) return '—';
+  const d = new Date(v);
+  if(isNaN(d.getTime())) return String(v);
   return new Date(v).toLocaleDateString('he-IL', {
     year: 'numeric',
     month: '2-digit',
