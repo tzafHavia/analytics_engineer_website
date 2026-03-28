@@ -137,6 +137,37 @@ code, pre {
   margin-right: auto;
 }
 .logo-icon { font-size: 1.4rem; }
+
+/* logo group — icon + text side by side */
+.navbar-logo-group {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-right: auto;
+}
+.navbar-logo-text {
+  text-decoration: none;
+}
+.logo-icon-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  font-size: 1.4rem;
+  /* on desktop: not a toggle, no hover effect */
+  pointer-events: none;
+}
+@media (max-width: 430px) {
+  .logo-icon-btn {
+    pointer-events: auto;
+    cursor: pointer;
+  }
+  .logo-icon-btn:active { transform: scale(0.9); }
+  /* hide the separate toggle button on mobile */
+  .theme-toggle { display: none !important; }
+}
 .logo-text  {
   font-size: 1.1rem;
   font-weight: 700;

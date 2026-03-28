@@ -16,11 +16,15 @@ export default function Navbar() {
   return (
     <nav className="navbar">
       <div className="navbar-inner">
-        {/* Logo */}
-        <Link href="/" className="navbar-logo">
-          <span className="logo-icon">📊</span>
-          <span className="logo-text">DataPortfolio</span>
-        </Link>
+        {/* Logo — icon doubles as theme toggle on mobile */}
+        <div className="navbar-logo-group">
+          <button onClick={toggle} className="logo-icon-btn" aria-label="Toggle theme">
+            <span className="logo-icon">📊</span>
+          </button>
+          <Link href="/" className="navbar-logo-text">
+            <span className="logo-text">DataPortfolio</span>
+          </Link>
+        </div>
 
         {/* Links */}
         <div className="navbar-links">
@@ -35,7 +39,7 @@ export default function Navbar() {
           ))}
         </div>
 
-        {/* Theme toggle */}
+        {/* Theme toggle — desktop only */}
         <button onClick={toggle} className="theme-toggle" aria-label="Toggle theme">
           {theme === 'dark' ? '☀️' : '🌙'}
         </button>
