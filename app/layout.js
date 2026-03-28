@@ -27,8 +27,9 @@ export default function RootLayout({ children }) {
 
             <footer className="footer">
               <p>
-                Built with <span className="footer-heart">♥</span> using{' '}
-                <strong>Next.js</strong> + <strong>Supabase</strong>
+                Engineered by <strong>Zafrir Havia</strong> · Transforming raw data into decisions —
+                built with <span className="footer-heart">♥</span> using{' '}
+                <strong>Next.js</strong>, <strong>dbt</strong> &amp; <strong>Supabase</strong>
               </p>
             </footer>
           </div>
