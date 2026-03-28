@@ -284,6 +284,14 @@ export default async function ConvenienceStorePage() {
             >
               GitHub ↗
             </a>
+            <a
+              href="/dbt-docs/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-outline"
+            >
+              📚 dbt Docs ↗
+            </a>
             <span className="btn-outline" style={{ cursor: 'default', opacity: 0.5 }}>
               Live Dashboard (coming soon)
             </span>
@@ -345,8 +353,11 @@ export default async function ConvenienceStorePage() {
       <section className="cs-section">
         <h2 className="cs-section-title">The Problem</h2>
         <p className="cs-section-subtitle">
-          The business collected valuable POS data daily but had no way to turn it into
-          useful reports.
+          In the fast-paced world of retail, convenience store owners often struggle with
+          fragmented data spread across inventory logs and sales receipts. Without a
+          centralized &ldquo;Single Source of Truth,&rdquo; it&rsquo;s nearly impossible to identify
+          low-stock risks, track real-time profitability, or understand customer buying
+          patterns.
         </p>
         <div className="cs-problem-grid">
           <div className="cs-problem-card">
@@ -425,6 +436,12 @@ export default async function ConvenienceStorePage() {
       ══════════════════════════════════════════════════════════════ */}
       <section className="cs-section">
         <h2 className="cs-section-title">Solution</h2>
+        <p className="cs-section-subtitle">
+          I built a robust, scalable data pipeline designed to transform raw operational
+          data into actionable business intelligence. By leveraging the Modern Data Stack,
+          this project automates the journey from cloud storage to a high-level executive
+          dashboard.
+        </p>
         <div className="cs-solution-grid">
           {[
             { icon: '🔄', title: 'Automated Ingestion', desc: 'Nightly ETL job extracts POS backups at 01:30 AM and loads raw data into the local database.' },
@@ -442,6 +459,61 @@ export default async function ConvenienceStorePage() {
               </div>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════
+          TECHNICAL DEEP DIVE
+      ══════════════════════════════════════════════════════════════ */}
+      <section className="cs-section">
+        <h2 className="cs-section-title">Technical Architecture & Workflow</h2>
+        <p className="cs-section-subtitle">
+          Each layer of the stack was chosen deliberately — from raw data ingestion to
+          the final visual layer served to stakeholders.
+        </p>
+        <div className="cs-tech-deepdive-grid">
+          <div className="cs-td-card">
+            <span className="cs-td-icon">⚡</span>
+            <div>
+              <h4 className="cs-td-title">Storage &amp; Cloud DB</h4>
+              <p className="cs-td-desc">
+                Utilized <strong>Supabase (PostgreSQL)</strong> as the primary data
+                warehouse, ensuring high availability and seamless cloud integration.
+              </p>
+            </div>
+          </div>
+          <div className="cs-td-card">
+            <span className="cs-td-icon">🔧</span>
+            <div>
+              <h4 className="cs-td-title">Data Transformation — dbt</h4>
+              <p className="cs-td-desc">
+                Engineered a multi-layered modeling architecture (Staging, Intermediate,
+                and Marts). Implemented rigorous data quality tests and documentation to
+                ensure every KPI is accurate and reliable.
+              </p>
+            </div>
+          </div>
+          <div className="cs-td-card">
+            <span className="cs-td-icon">🗄️</span>
+            <div>
+              <h4 className="cs-td-title">Analytics Engineering</h4>
+              <p className="cs-td-desc">
+                Developed complex SQL models to calculate high-impact metrics like
+                Inventory Turnover, Category Performance, and Profit Margins.
+              </p>
+            </div>
+          </div>
+          <div className="cs-td-card">
+            <span className="cs-td-icon">📊</span>
+            <div>
+              <h4 className="cs-td-title">Visual Intelligence</h4>
+              <p className="cs-td-desc">
+                Created an interactive <strong>Tableau dashboard</strong> that translates
+                raw numbers into a visual story, allowing stakeholders to drill down from
+                high-level KPIs to specific product performance.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -592,10 +664,10 @@ export default async function ConvenienceStorePage() {
         <h2 className="cs-section-title">Business Impact</h2>
         <div className="cs-impact-grid">
           {[
+            { icon: '�', title: 'Inventory Optimization', desc: 'Identifying "dead stock" vs. high-velocity items to improve cash flow and reduce overstock.' },
+            { icon: '⚡', title: 'Operational Clarity', desc: 'Reducing the time spent on manual reporting from hours to seconds — management gets weekly data-backed reports automatically.' },
+            { icon: '✅', title: 'Data Integrity', desc: 'Automated dbt testing ensures that business decisions are never based on "dirty" or duplicated data.' },
             { icon: '💰', title: 'Zero Vendor Cost', desc: 'Completely eliminated the need for expensive Verifone reporting add-ons.' },
-            { icon: '📊', title: 'Data-Driven Decisions', desc: "Management now has weekly data-backed reports to guide purchasing and staffing." },
-            { icon: '📦', title: 'Better Inventory Planning', desc: 'Inventory insights reduced overstock and identified slow-moving SKUs early.' },
-            { icon: '👥', title: 'Optimised Staffing', desc: 'Peak-hour analysis enabled smarter scheduling, reducing idle labour cost.' },
           ].map((item, i) => (
             <div key={i} className="cs-impact-card">
               <span className="cs-impact-icon">{item.icon}</span>
