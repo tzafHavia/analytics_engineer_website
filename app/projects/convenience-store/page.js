@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { fetchPaymentKpis } from '@/lib/pgClient';
+import { fetchPaymentKpis, fetchDailySales } from '@/lib/pgClient';
+import DailySalesChart from '@/components/DailySalesChart';
 
 // ─── Static chart placeholder ───────────────────────────────────────────────
 function ChartPlaceholder({ title, description, type = 'bar', height = 240 }) {
@@ -164,10 +165,12 @@ export const metadata = {
 
 export default async function ConvenienceStorePage() {
   let kpis = null;
+  let dailySales = [];
   try {
-    kpis = await fetchPaymentKpis();
+    [kpis, dailySales] = await Promise.all([fetchPaymentKpis(), fetchDailySales()]);
   } catch (_) {
-    // DB unavailable — render with fallback "—" values
+    // DB unavailable — render with fallback values
+    try { kpis = await fetchPaymentKpis(); } catch (_2) {}
   }
 
   function fmt(v, type = 'currency') {
@@ -285,7 +288,7 @@ export default async function ConvenienceStorePage() {
               GitHub ↗
             </a>
             <a
-              href="/dbt-docs/"
+              href="/dbt-docs/index.html"
               target="_blank"
               rel="noopener noreferrer"
               className="btn-outline"
@@ -529,21 +532,16 @@ export default async function ConvenienceStorePage() {
 
         <div className="cs-dashboards-grid">
 
-          {/* Dashboard 1 — Sales */}
+          {/* Dashboard 1 — Sales (Live) */}
           <div className="cs-dashboard-block">
             <div className="cs-db-label">
               <span>🏪</span> Sales Performance Dashboard
             </div>
             <p className="cs-db-desc">
-              Daily / weekly / monthly revenue, profit trends, and cost vs revenue
-              comparison.
+              Daily revenue totals computed from <code>shlomy_store.payments_complete</code> —
+              each bar represents one trading day.
             </p>
-            <ChartPlaceholder
-              title="Revenue vs Cost (weekly)"
-              description="Bar chart showing daily revenue and cost breakdown"
-              type="bar"
-              height={220}
-            />
+            <DailySalesChart data={dailySales} />
           </div>
 
           {/* Dashboard 2 — Employee */}
