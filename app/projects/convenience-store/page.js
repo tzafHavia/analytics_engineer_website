@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { fetchPaymentKpis } from '@/lib/pgClient';
 
 // ─── Static chart placeholder ───────────────────────────────────────────────
 function ChartPlaceholder({ title, description, type = 'bar', height = 240 }) {
@@ -161,12 +162,86 @@ export const metadata = {
     'End-to-end data platform transforming POS data into actionable business insights.',
 };
 
-export default function ConvenienceStorePage() {
+export default async function ConvenienceStorePage() {
+  let kpis = null;
+  try {
+    kpis = await fetchPaymentKpis();
+  } catch (_) {
+    // DB unavailable — render with fallback "—" values
+  }
+
+  function fmt(v, type = 'currency') {
+    if (v == null) return '—';
+    if (type === 'currency')
+      return `₪${Number(v).toLocaleString('he-IL', { minimumFractionDigits: 0 })}`;
+    if (type === 'pct') return `${Number(v).toFixed(1)}%`;
+    return String(v);
+  }
+
   return (
     <div className="cs-page">
 
       {/* ── Back ─────────────────────────────────────────────────────── */}
       <Link href="/projects" className="back-link">← All Projects</Link>
+
+      {/* ══════════════════════════════════════════════════════════════
+          LIVE KPIs — server-side aggregates from shlomy_store.payments_complete
+          Produced by dbt model: stg_fact_sales_p (local_store_pipeline repo)
+      ══════════════════════════════════════════════════════════════ */}
+      <section className="cs-section">
+        <div className="cs-section-eyebrow">
+          <span className="live-dot" />
+          <span className="live-label">Live Data</span>
+          <span className="live-source">
+            Source: <code>shlomy_store.payments_complete</code> · dbt model{' '}
+            <a
+              href="https://github.com/HomeDigSoftware/local_store_pipeline/blob/main/models/stg/stg_fact_sales_p.sql"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="live-source-link"
+            >
+              stg_fact_sales_p
+            </a>
+          </span>
+        </div>
+        <h2 className="cs-section-title">Pipeline KPIs</h2>
+        <p className="cs-section-subtitle">
+          Real aggregates computed server-side from the production database — the same
+          data the store manager sees every week. Each metric is derived from
+          transaction-level records deduped by <code>document_id</code> so receipts with
+          multiple line-items are counted once.
+        </p>
+        <div className="kpi-section cs-metrics-row">
+          <MetricCard
+            icon="💰"
+            label="Total Revenue"
+            value={fmt(kpis?.total_revenue)}
+            sub={`${kpis?.total_transactions ?? '—'} transactions`}
+            color="green"
+          />
+          <MetricCard
+            icon="🛒"
+            label="Avg. Basket Size"
+            value={fmt(kpis?.avg_basket_size)}
+            sub="Per receipt"
+            color="purple"
+          />
+          <MetricCard
+            icon="📅"
+            label="Avg. Daily Revenue"
+            value={fmt(kpis?.avg_daily_revenue)}
+            sub="Per trading day"
+            color="cyan"
+          />
+          <MetricCard
+            icon="💳"
+            label="Credit Card Rate"
+            value={fmt(kpis?.credit_rate, 'pct')}
+            sub="Of all transactions"
+            color="orange"
+          />
+        </div>
+      </section>
 
       {/* ══════════════════════════════════════════════════════════════
           HERO
@@ -202,7 +277,7 @@ export default function ConvenienceStorePage() {
           {/* Buttons */}
           <div className="cs-hero-actions">
             <a
-              href="https://github.com"
+              href="https://github.com/HomeDigSoftware/local_store_pipeline"
               target="_blank"
               rel="noopener noreferrer"
               className="btn-primary"
@@ -560,7 +635,7 @@ export default function ConvenienceStorePage() {
 
       {/* ── Bottom nav ───────────────────────────────────────────────────── */}
       <div className="detail-actions" style={{ marginTop: '3rem' }}>
-        <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="btn-primary">
+        <a href="https://github.com/HomeDigSoftware/local_store_pipeline" target="_blank" rel="noopener noreferrer" className="btn-primary">
           View on GitHub ↗
         </a>
         <Link href="/projects" className="btn-ghost">← Back to Projects</Link>
