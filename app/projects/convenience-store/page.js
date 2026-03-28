@@ -1,7 +1,211 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { fetchPaymentKpis, fetchDailySales } from '@/lib/pgClient';
+import { fetchDailySales, fetchPaymentKpiComparison } from '@/lib/pgClient';
 import DailySalesChart from '@/components/DailySalesChart';
+import RadialGaugeKpiCard from '@/components/RadialGaugeKpiCard';
+
+const KPI_TARGETS = {
+  total_revenue: {
+    target: 320000,
+    format: 'currency',
+    higherIsBetter: true,
+    label: 'Monthly target',
+  },
+  avg_basket_size: {
+    target: 92,
+    format: 'currency',
+    higherIsBetter: true,
+    label: 'Basket target',
+  },
+  avg_daily_revenue: {
+    target: 11500,
+    format: 'currency',
+    higherIsBetter: true,
+    label: 'Daily run-rate target',
+  },
+  credit_rate: {
+    target: 58,
+    format: 'pct',
+    higherIsBetter: true,
+    label: 'Payment mix target',
+  },
+};
+
+function startOfMonth(date) {
+  return new Date(date.getFullYear(), date.getMonth(), 1);
+}
+
+function addDays(date, days) {
+  const result = new Date(date);
+  result.setDate(result.getDate() + days);
+  return result;
+}
+
+function toIsoDate(date) {
+  return date.toISOString().slice(0, 10);
+}
+
+function getComparisonPeriods(referenceDate = new Date()) {
+  const currentStart = startOfMonth(referenceDate);
+  const currentEnd = addDays(referenceDate, 1);
+  const currentSpanDays = Math.max(
+    1,
+    Math.round((currentEnd.getTime() - currentStart.getTime()) / 86400000)
+  );
+  const previousStart = new Date(referenceDate.getFullYear(), referenceDate.getMonth() - 1, 1);
+  const previousMonthEnd = currentStart;
+  const previousEndCandidate = addDays(previousStart, currentSpanDays);
+  const previousEnd =
+    previousEndCandidate.getTime() > previousMonthEnd.getTime()
+      ? previousMonthEnd
+      : previousEndCandidate;
+
+  return {
+    currentStart,
+    currentEnd,
+    previousStart,
+    previousEnd,
+  };
+}
+
+function formatDateRange(start, endExclusive) {
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+  });
+  const inclusiveEnd = addDays(endExclusive, -1);
+  return `${formatter.format(start)} - ${formatter.format(inclusiveEnd)}`;
+}
+
+function formatMetric(value, type = 'currency') {
+  if (value == null || Number.isNaN(Number(value))) return '—';
+  if (type === 'currency') {
+    return `₪${Number(value).toLocaleString('he-IL', { minimumFractionDigits: 0 })}`;
+  }
+  if (type === 'pct') {
+    return `${Number(value).toFixed(1)}%`;
+  }
+  return Number(value).toLocaleString('he-IL');
+}
+
+function formatCompactMetric(value, type = 'currency') {
+  if (value == null || Number.isNaN(Number(value))) return '—';
+  if (type === 'currency') {
+    return `₪${new Intl.NumberFormat('he-IL', {
+      notation: 'compact',
+      maximumFractionDigits: 1,
+    }).format(Number(value))}`;
+  }
+  if (type === 'pct') {
+    return `${Number(value).toFixed(0)}%`;
+  }
+  return new Intl.NumberFormat('he-IL', {
+    notation: 'compact',
+    maximumFractionDigits: 1,
+  }).format(Number(value));
+}
+
+function formatDelta(value, type = 'pct') {
+  if (value == null || Number.isNaN(Number(value))) return null;
+  const numericValue = Number(value);
+  const sign = numericValue > 0 ? '+' : '';
+
+  if (type === 'pct') {
+    return `${sign}${numericValue.toFixed(1)}%`;
+  }
+
+  return `${sign}${formatMetric(numericValue, type)}`;
+}
+
+function getDelta(currentValue, previousValue) {
+  if (
+    currentValue == null ||
+    previousValue == null ||
+    Number(previousValue) === 0 ||
+    Number.isNaN(Number(currentValue)) ||
+    Number.isNaN(Number(previousValue))
+  ) {
+    return null;
+  }
+
+  return ((Number(currentValue) - Number(previousValue)) / Math.abs(Number(previousValue))) * 100;
+}
+
+function getTrendTone(delta, higherIsBetter = true) {
+  if (delta == null) return 'flat';
+  if (Math.abs(delta) < 0.3) return 'flat';
+  const improving = higherIsBetter ? delta > 0 : delta < 0;
+  return improving ? 'positive' : 'negative';
+}
+
+function roundUpNiceNumber(value) {
+  if (!Number.isFinite(value) || value <= 0) return 1;
+  const magnitude = 10 ** Math.floor(Math.log10(value));
+  const normalized = value / magnitude;
+
+  if (normalized <= 1) return magnitude;
+  if (normalized <= 1.5) return 1.5 * magnitude;
+  if (normalized <= 2) return 2 * magnitude;
+  if (normalized <= 2.5) return 2.5 * magnitude;
+  if (normalized <= 5) return 5 * magnitude;
+  return 10 * magnitude;
+}
+
+function getGaugeMaxValue(currentValue, previousValue, targetValue, format) {
+  if (format === 'pct') {
+    return 100;
+  }
+
+  const safeCurrent = Number(currentValue) || 0;
+  const safePrevious = Number(previousValue) || 0;
+  const safeTarget = Number(targetValue) || 0;
+  const baseline = Math.max(safeCurrent, safePrevious, safeTarget, 1);
+  return roundUpNiceNumber(Math.max(safeTarget * 1.2, baseline * 1.08));
+}
+
+function buildGaugeMetricModel({
+  metricKey,
+  icon,
+  label,
+  color,
+  format,
+  current,
+  previous,
+  timeframe,
+  comparisonTimeframe,
+}) {
+  const currentSnapshot = current ?? {};
+  const previousSnapshot = previous ?? {};
+  const targetConfig = KPI_TARGETS[metricKey];
+  const currentValue = currentSnapshot[metricKey] ?? null;
+  const previousValue = previousSnapshot[metricKey] ?? null;
+  const delta = getDelta(currentValue, previousValue);
+  const targetValue = targetConfig?.target ?? null;
+  const maxValue = getGaugeMaxValue(currentValue, previousValue, targetValue, format);
+  const trendTone = getTrendTone(delta, targetConfig?.higherIsBetter);
+
+  return {
+    icon,
+    label,
+    color,
+    displayValue: formatMetric(currentValue, format),
+    displayPrevious: formatCompactMetric(previousValue, format),
+    displayTarget: formatCompactMetric(targetValue, format),
+    timeframe,
+    deltaLabel: delta == null ? '—' : formatDelta(delta),
+    deltaTone: trendTone,
+    currentValue: currentValue == null ? 0 : Number(currentValue),
+    previousValue: previousValue == null ? 0 : Number(previousValue),
+    targetValue: targetValue == null ? 0 : Number(targetValue),
+    maxValue,
+    scaleMinLabel: format === 'pct' ? '0%' : '0',
+    scaleMaxLabel: formatCompactMetric(maxValue, format),
+    ariaLabel:
+      delta == null
+        ? `${label}. Current value ${formatMetric(currentValue, format)}. Target ${formatMetric(targetValue, format)}.`
+        : `${label}. Current value ${formatMetric(currentValue, format)}, previous period ${formatMetric(previousValue, format)}, target ${formatMetric(targetValue, format)}, change ${formatDelta(delta)} versus ${comparisonTimeframe}.`,
+  };
+}
 
 // ─── Static chart placeholder ───────────────────────────────────────────────
 function ChartPlaceholder({ title, description, type = 'bar', height = 240 }) {
@@ -164,22 +368,76 @@ export const metadata = {
 };
 
 export default async function ConvenienceStorePage() {
+  const periods = getComparisonPeriods();
+  const currentRange = formatDateRange(periods.currentStart, periods.currentEnd);
+  const previousRange = formatDateRange(periods.previousStart, periods.previousEnd);
+
   let kpis = null;
   let dailySales = [];
   try {
-    [kpis, dailySales] = await Promise.all([fetchPaymentKpis(), fetchDailySales()]);
+    [kpis, dailySales] = await Promise.all([
+      fetchPaymentKpiComparison({
+        currentStart: toIsoDate(periods.currentStart),
+        currentEnd: toIsoDate(periods.currentEnd),
+        previousStart: toIsoDate(periods.previousStart),
+        previousEnd: toIsoDate(periods.previousEnd),
+      }),
+      fetchDailySales(),
+    ]);
   } catch (_) {
     // DB unavailable — render with fallback values
-    try { kpis = await fetchPaymentKpis(); } catch (_2) {}
+    kpis = {
+      current: null,
+      previous: null,
+    };
   }
 
-  function fmt(v, type = 'currency') {
-    if (v == null) return '—';
-    if (type === 'currency')
-      return `₪${Number(v).toLocaleString('he-IL', { minimumFractionDigits: 0 })}`;
-    if (type === 'pct') return `${Number(v).toFixed(1)}%`;
-    return String(v);
-  }
+  const liveMetricCards = [
+    buildGaugeMetricModel({
+      metricKey: 'total_revenue',
+      icon: '💰',
+      label: 'Total Revenue',
+      color: 'green',
+      format: 'currency',
+      current: kpis?.current,
+      previous: kpis?.previous,
+      timeframe: `This month · ${currentRange}`,
+      comparisonTimeframe: previousRange,
+    }),
+    buildGaugeMetricModel({
+      metricKey: 'avg_basket_size',
+      icon: '🛒',
+      label: 'Avg. Basket Size',
+      color: 'purple',
+      format: 'currency',
+      current: kpis?.current,
+      previous: kpis?.previous,
+      timeframe: `This month · ${currentRange}`,
+      comparisonTimeframe: previousRange,
+    }),
+    buildGaugeMetricModel({
+      metricKey: 'avg_daily_revenue',
+      icon: '📅',
+      label: 'Avg. Daily Revenue',
+      color: 'cyan',
+      format: 'currency',
+      current: kpis?.current,
+      previous: kpis?.previous,
+      timeframe: `MTD run-rate · ${currentRange}`,
+      comparisonTimeframe: previousRange,
+    }),
+    buildGaugeMetricModel({
+      metricKey: 'credit_rate',
+      icon: '💳',
+      label: 'Credit Card Rate',
+      color: 'orange',
+      format: 'pct',
+      current: kpis?.current,
+      previous: kpis?.previous,
+      timeframe: `This month · ${currentRange}`,
+      comparisonTimeframe: previousRange,
+    }),
+  ];
 
   return (
     <div className="cs-page">
@@ -209,40 +467,14 @@ export default async function ConvenienceStorePage() {
         </div>
         <h2 className="cs-section-title">Pipeline KPIs</h2>
         <p className="cs-section-subtitle">
-          Real aggregates computed server-side from the production database — the same
-          data the store manager sees every week. Each metric is derived from
-          transaction-level records deduped by <code>document_id</code> so receipts with
-          multiple line-items are counted once.
+          Real aggregates computed server-side from the production database. Each gauge
+          shows the current month-to-date value, a lighter band for the same days last month,
+          and a target marker anchored to the same scale.
         </p>
-        <div className="kpi-section cs-metrics-row">
-          <MetricCard
-            icon="💰"
-            label="Total Revenue"
-            value={fmt(kpis?.total_revenue)}
-            sub={`${kpis?.total_transactions ?? '—'} transactions`}
-            color="green"
-          />
-          <MetricCard
-            icon="🛒"
-            label="Avg. Basket Size"
-            value={fmt(kpis?.avg_basket_size)}
-            sub="Per receipt"
-            color="purple"
-          />
-          <MetricCard
-            icon="📅"
-            label="Avg. Daily Revenue"
-            value={fmt(kpis?.avg_daily_revenue)}
-            sub="Per trading day"
-            color="cyan"
-          />
-          <MetricCard
-            icon="💳"
-            label="Credit Card Rate"
-            value={fmt(kpis?.credit_rate, 'pct')}
-            sub="Of all transactions"
-            color="orange"
-          />
+        <div className="kpi-section cs-gauge-grid">
+          {liveMetricCards.map((card) => (
+            <RadialGaugeKpiCard key={card.label} {...card} />
+          ))}
         </div>
       </section>
 
