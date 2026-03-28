@@ -1,6 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useTheme } from '@/components/ThemeProvider';
 
 const navLinks = [
   { href: '/', label: 'Home' },
@@ -10,6 +11,7 @@ const navLinks = [
 
 export default function Navbar() {
   const pathname = usePathname();
+  const { theme, toggle } = useTheme();
 
   return (
     <nav className="navbar">
@@ -32,6 +34,11 @@ export default function Navbar() {
             </Link>
           ))}
         </div>
+
+        {/* Theme toggle */}
+        <button onClick={toggle} className="theme-toggle" aria-label="Toggle theme">
+          {theme === 'dark' ? '☀️' : '🌙'}
+        </button>
 
         {/* Badge */}
         <div className="navbar-badge">

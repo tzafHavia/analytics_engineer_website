@@ -28,6 +28,33 @@
   --shadow-glow:   0 0 40px rgba(99,102,241,0.25);
   --radius:        14px;
   --radius-sm:     8px;
+
+  --navbar-bg: rgba(8,11,20,0.75);
+}
+
+/* ─── Light theme overrides ─────────────────────────────────────────────── */
+[data-theme="light"] {
+  --bg-base:      #f0f4ff;
+  --bg-surface:   #e4eaf8;
+  --bg-card:      #ffffff;
+  --bg-card-hover:#f5f7ff;
+  --border:       rgba(99,102,241,0.2);
+  --border-light: rgba(0,0,0,0.08);
+
+  --text-primary:   #0f172a;
+  --text-secondary: #475569;
+  --text-muted:     #94a3b8;
+
+  --gradient-card: linear-gradient(145deg, #ffffff, #f0f4ff);
+  --shadow-card:   0 4px 24px rgba(0,0,0,0.08), 0 0 0 1px var(--border);
+  --shadow-glow:   0 0 40px rgba(99,102,241,0.15);
+
+  --navbar-bg: rgba(240,244,255,0.85);
+}
+
+/* smooth transitions on theme switch */
+*, *::before, *::after {
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
 }
 
 /* =============================================
@@ -68,7 +95,9 @@ code, pre {
   z-index: 0;
   opacity: 0.25;
   animation: blobFloat 12s ease-in-out infinite alternate;
+  transition: opacity 0.25s ease;
 }
+[data-theme="light"] .bg-blob { opacity: 0.1; }
 .bg-blob-1 { width: 600px; height: 600px; background: var(--purple); top: -150px; left: -150px; }
 .bg-blob-2 { width: 500px; height: 500px; background: var(--cyan);   bottom: 10%;  right: -100px; animation-delay: -4s; }
 .bg-blob-3 { width: 400px; height: 400px; background: var(--pink);   top: 40%;    left: 35%;    animation-delay: -8s; opacity: 0.12; }
@@ -85,7 +114,7 @@ code, pre {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(8,11,20,0.75);
+  background: var(--navbar-bg);
   backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border-light);
 }
@@ -150,6 +179,26 @@ code, pre {
 @keyframes pulse {
   0%,100% { opacity: 1; }
   50%      { opacity: 0.3; }
+}
+
+.theme-toggle {
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.2s, border-color 0.2s, transform 0.15s;
+}
+.theme-toggle:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border);
+  transform: scale(1.08);
 }
 
 /* =============================================
