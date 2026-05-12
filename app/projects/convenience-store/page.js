@@ -450,7 +450,7 @@ export default async function ConvenienceStorePage() {
           Produced by dbt model: stg_fact_sales_p (local_store_pipeline repo)
       ══════════════════════════════════════════════════════════════ */}
       <section className="cs-section">
-        <div className="cs-section-eyebrow">
+        {/* <div className="cs-section-eyebrow">
           <span className="live-dot" />
           <span className="live-label">Live Data</span>
           <span className="live-source">
@@ -464,7 +464,7 @@ export default async function ConvenienceStorePage() {
               stg_fact_sales_p
             </a>
           </span>
-        </div>
+        </div> */}
         <h2 className="cs-section-title">Pipeline KPIs</h2>
         <p className="cs-section-subtitle">
           Real aggregates computed server-side from the production database. Each gauge
@@ -511,6 +511,9 @@ export default async function ConvenienceStorePage() {
 
           {/* Buttons */}
           <div className="cs-hero-actions">
+            <Link href="/projects/convenience-store/dashboard" className="btn-secondary">
+              Overview Dashboard
+            </Link>
             <a
               href="https://github.com/HomeDigSoftware/local_store_pipeline"
               target="_blank"
