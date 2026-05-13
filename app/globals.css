@@ -971,6 +971,97 @@ code, pre {
   margin: 1rem 0 0.8rem;
 }
 
+.od-filter-panel {
+  background: var(--gradient-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  padding: 1.4rem;
+}
+
+.od-filter-form {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.od-filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.od-filter-field span {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.od-filter-field input,
+.od-filter-field select {
+  width: 100%;
+  min-height: 42px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-light);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  padding: 0.7rem 0.85rem;
+  outline: none;
+}
+
+.od-filter-field input:focus,
+.od-filter-field select:focus {
+  border-color: var(--purple);
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+}
+
+.od-filter-actions {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+  grid-column: 1 / -1;
+  flex-wrap: wrap;
+}
+
+.od-reset-button {
+  min-height: 42px;
+}
+
+.od-active-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-top: -0.25rem;
+}
+
+.od-active-filters-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.od-chip-row {
+  display: flex;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.od-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0.45rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(99,102,241,0.08);
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
 .od-subtitle,
 .od-panel-copy,
 .od-summary-note {
@@ -1140,6 +1231,10 @@ code, pre {
     grid-template-columns: 1fr;
   }
 
+  .od-filter-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .od-section-head,
   .od-panel-head,
   .od-meta-row {
@@ -1155,12 +1250,17 @@ code, pre {
 @media (max-width: 640px) {
   .od-hero-copy,
   .od-summary-card,
-  .od-panel {
+  .od-panel,
+  .od-filter-panel {
     padding: 1.1rem;
   }
 
   .od-title {
     font-size: 1.85rem;
+  }
+
+  .od-filter-form {
+    grid-template-columns: 1fr;
   }
 
   .od-summary-stats div {

@@ -1,10 +1,11 @@
 import Link from 'next/link';
+import OverviewFilters from '@/components/OverviewFilters';
 import KpiCard from '@/components/KpiCard';
 import InventoryStatusDonut from '@/components/InventoryStatusDonut';
 import OverviewDailyPerformanceTable from '@/components/OverviewDailyPerformanceTable';
 import OverviewTopProductsChart from '@/components/OverviewTopProductsChart';
 import OverviewTrendChart from '@/components/OverviewTrendChart';
-import { fetchOverviewDashboardData } from '@/lib/pgClient';
+import { fetchOverviewDashboardData, fetchOverviewFilterOptions } from '@/lib/pgClient';
 
 function formatCurrency(value) {
   return `₪${Number(value || 0).toLocaleString('he-IL', { maximumFractionDigits: 0 })}`;
@@ -48,17 +49,70 @@ function getDeltaTone(delta) {
   return delta > 0 ? 'green' : 'orange';
 }
 
-export default async function ConvenienceStoreDashboardPage() {
+function getSearchParamValue(value) {
+  if (Array.isArray(value)) return value[0] || '';
+  return typeof value === 'string' ? value : '';
+}
+
+function getActiveFilterChips(filters) {
+  const chips = [];
+
+  if (filters.dateFrom || filters.dateTo) {
+    const start = filters.dateFrom || 'Start';
+    const end = filters.dateTo || 'Latest';
+    chips.push({ key: 'date', label: `Date: ${start} to ${end}` });
+  }
+
+  if (filters.productCategory) {
+    chips.push({ key: 'productCategory', label: `Category: ${filters.productCategory}` });
+  }
+
+  if (filters.itemName) {
+    chips.push({ key: 'itemName', label: `Item: ${filters.itemName}` });
+  }
+
+  if (filters.stockStatus) {
+    chips.push({ key: 'stockStatus', label: `Stock: ${filters.stockStatus}` });
+  }
+
+  if (filters.velocityBand) {
+    chips.push({ key: 'velocityBand', label: `Velocity: ${filters.velocityBand}` });
+  }
+
+  return chips;
+}
+
+export default async function ConvenienceStoreDashboardPage({ searchParams }) {
+  const resolvedSearchParams = await searchParams;
+  const filters = {
+    dateFrom: getSearchParamValue(resolvedSearchParams?.dateFrom),
+    dateTo: getSearchParamValue(resolvedSearchParams?.dateTo),
+    productCategory: getSearchParamValue(resolvedSearchParams?.productCategory),
+    itemName: getSearchParamValue(resolvedSearchParams?.itemName),
+    stockStatus: getSearchParamValue(resolvedSearchParams?.stockStatus),
+    velocityBand: getSearchParamValue(resolvedSearchParams?.velocityBand),
+  };
+
   let overview = null;
+  let filterOptions = {
+    productCategories: [],
+    itemNames: [],
+    stockStatuses: [],
+    velocityBands: [],
+  };
 
   try {
-    overview = await fetchOverviewDashboardData();
+    [overview, filterOptions] = await Promise.all([
+      fetchOverviewDashboardData(filters),
+      fetchOverviewFilterOptions(),
+    ]);
   } catch (_) {
     overview = {
       freshness: null,
       latestSaleDate: null,
       currentPeriod: { start: null, end: null, days: 30 },
       previousPeriod: { start: null, end: null, days: 30 },
+      activeFilters: filters,
       kpis: {
         totalSales: 0,
         salesDeltaPct: null,
@@ -72,6 +126,13 @@ export default async function ConvenienceStoreDashboardPage() {
       dailySalesTrend: [],
       ticketTrend: [],
       topProducts: [],
+      topProductsMetric: {
+        key: 'salesAmount30d',
+        label: 'Revenue',
+        heading: 'Top 10 products by sales',
+        description: 'Revenue leaders ordered by rolling 30-day sales amount.',
+        valueFormat: 'currency-compact',
+      },
       inventoryDistribution: [],
       recentDailyPerformance: [],
     };
@@ -85,6 +146,7 @@ export default async function ConvenienceStoreDashboardPage() {
     overview.previousPeriod.start,
     overview.previousPeriod.end
   );
+  const activeFilterChips = getActiveFilterChips(overview.activeFilters || filters);
 
   const kpiCards = [
     {
@@ -195,6 +257,8 @@ export default async function ConvenienceStoreDashboardPage() {
         </div>
       </section>
 
+      <OverviewFilters initialFilters={overview.activeFilters || filters} options={filterOptions} />
+
       <section className="cs-section od-section-spacing">
         <div className="od-section-head">
           <div>
@@ -221,6 +285,24 @@ export default async function ConvenienceStoreDashboardPage() {
         </div>
       </section>
 
+      {activeFilterChips.length ? (
+        <section className="od-active-filters" aria-label="Active filters">
+          <div className="od-active-filters-head">
+            <span className="od-panel-kicker">Active filters</span>
+            <Link href="/projects/convenience-store/dashboard" className="od-inline-link">
+              Clear all
+            </Link>
+          </div>
+          <div className="od-chip-row">
+            {activeFilterChips.map((chip) => (
+              <span key={chip.key} className="od-filter-chip">
+                {chip.label}
+              </span>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
       <section className="od-two-col-grid od-section-spacing">
         <OverviewTrendChart
           title="Daily sales trend"
@@ -245,6 +327,7 @@ export default async function ConvenienceStoreDashboardPage() {
       <section className="od-two-col-grid od-section-spacing">
         <OverviewTopProductsChart
           data={overview.topProducts}
+          metric={overview.topProductsMetric}
           footerLink={{ href: '#overview-top-products', label: 'Top 10 live ranking' }}
         />
         <InventoryStatusDonut
