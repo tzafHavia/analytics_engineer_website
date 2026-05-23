@@ -2,6 +2,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import Navbar from '@/components/Navbar';
 import ThemeProvider from '@/components/ThemeProvider';
+import FloatingContactButton from '@/components/FloatingContactButton';
 
 const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] });
 const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'] });
@@ -32,6 +33,8 @@ export default function RootLayout({ children }) {
                 <strong>Next.js</strong>, <strong>dbt</strong> &amp; <strong>Supabase</strong>
               </p>
             </footer>
+
+            <FloatingContactButton />
           </div>
         </ThemeProvider>
       </body>
