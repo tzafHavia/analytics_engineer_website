@@ -51,7 +51,7 @@ export async function POST(request) {
     );
   }
 
-  // ── 4. Save lead to Supabase ─────────────────────────────────────────────
+  // ── 4. Save lead to Supabase — upsert logic ──────────────────────────────
   let serviceClient;
   try {
     serviceClient = getServiceClient();
@@ -60,9 +60,49 @@ export async function POST(request) {
     return Response.json({ error: 'Server configuration error.' }, { status: 500 });
   }
 
-  const { error: dbError } = await serviceClient
+  // Check if this phone number has submitted before
+  const { data: existingLead } = await serviceClient
     .from('leads')
-    .insert({ name, phone, message: message || null });
+    .select('id, message')
+    .eq('phone', phone)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const isReturning = !!existingLead;
+  let dbError;
+
+  if (isReturning) {
+    // ── Returning lead: append new message under the previous one ────────────
+    const timestamp = new Date().toLocaleString('he-IL', {
+      timeZone: 'Asia/Jerusalem',
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
+    const appended = [
+      existingLead.message ?? '',
+      `\n--- הודעה נוספת מהלקוח (${timestamp}) ---`,
+      message || '(ללא הודעה)',
+    ].join('\n');
+
+    const { error } = await serviceClient
+      .from('leads')
+      .update({ message: appended })
+      .eq('id', existingLead.id);
+
+    dbError = error;
+  } else {
+    // ── New lead: insert fresh row ────────────────────────────────────────────
+    const { error } = await serviceClient
+      .from('leads')
+      .insert({ name, phone, message: message || null });
+
+    dbError = error;
+  }
 
   if (dbError) {
     console.error('[contact] Failed to save lead to DB:', dbError.message);
@@ -105,15 +145,25 @@ export async function POST(request) {
           to: ownerPhone,
           type: 'text',
           text: {
-            body: [
-              '📩 *New lead from your portfolio!*',
-              '',
-              `👤 Name: ${name}`,
-              `📞 Phone: ${phone}`,
-              message ? `💬 Message: ${message}` : null,
-            ]
-              .filter(Boolean)
-              .join('\n'),
+            body: isReturning
+              ? [
+                  '🔁 *Additional message from existing lead!*',
+                  '',
+                  `👤 Name: ${name}`,
+                  `📞 Phone: ${phone}`,
+                  message ? `💬 Message: ${message}` : null,
+                ]
+                  .filter(Boolean)
+                  .join('\n')
+              : [
+                  '📩 *New lead from your portfolio!*',
+                  '',
+                  `👤 Name: ${name}`,
+                  `📞 Phone: ${phone}`,
+                  message ? `💬 Message: ${message}` : null,
+                ]
+                  .filter(Boolean)
+                  .join('\n'),
           },
         };
 
