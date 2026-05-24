@@ -1,7 +1,7 @@
 // app/api/contact/route.js
 // Receives lead details from the contact form, saves to Supabase `public.leads`,
 // and sends a WhatsApp notification via WhatsApp Business API (Graph API v20.0).
-
+// lead_notification
 import { createClient } from '@supabase/supabase-js';
 
 const WHATSAPP_API_URL = `https://graph.facebook.com/v20.0/${process.env.NEXT_WHATSAPP_PHONE_NUMBER_ID}/messages`;
@@ -126,14 +126,14 @@ export async function POST(request) {
           type: 'template',
           template: {
             name: templateName,
-            language: { code: 'en_US' },
+            language: { code: 'en' },
             components: [
               {
                 type: 'body',
                 parameters: [
-                  { type: 'text', text: name },
-                  { type: 'text', text: phone },
-                  { type: 'text', text: message || 'No message provided' },
+                  { type: 'text', parameter_name: 'name', text: name },
+                  { type: 'text', parameter_name: 'phone', text: phone },
+                  { type: 'text', parameter_name: 'message', text: message || 'No message provided' },
                 ],
               },
             ],
