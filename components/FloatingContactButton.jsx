@@ -1,9 +1,21 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import ContactModal from '@/components/ContactModal';
+
+// Pages that have their own lead modal — hide the generic floating button there.
+const HIDDEN_ON = ['/crm'];
 
 export default function FloatingContactButton() {
   const [isOpen, setIsOpen] = useState(false);
+  // `mounted` prevents SSR/CSR hydration mismatch:
+  // server always renders null; after mount the button appears (or not) based on pathname.
+  const [mounted, setMounted] = useState(false);
+  const pathname = usePathname();
+
+  useEffect(() => { setMounted(true); }, []);
+
+  if (!mounted || HIDDEN_ON.includes(pathname)) return null;
 
   return (
     <>

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import KpiCard from '@/components/KpiCard';
+import PipelineAnimation from '@/components/PipelineAnimation';
 import { mockKpis } from '@/lib/mockData';
 
 export default function Home() {
@@ -11,6 +12,7 @@ export default function Home() {
           <span className="eyebrow-dot" />
           Data Analytics Portfolio
         </div>
+        <PipelineAnimation />
         <h1 className="hero-title">
           Turning Raw Data Into
           <span className="hero-highlight"> Actionable Insights</span>

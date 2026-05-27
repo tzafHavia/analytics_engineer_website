@@ -1,32 +1,36 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 
-export default function ContactModal({ isOpen, onClose }) {
-  const [form, setForm] = useState({ name: '', phone: '', message: '' });
+const INTEREST_OPTIONS = [
+  { value: '', label: 'Select topic (optional)' },
+  { value: 'pricing', label: 'Pricing & Costs' },
+  { value: 'demo', label: 'Schedule a Demo' },
+  { value: 'features', label: 'Feature Questions' },
+  { value: 'custom', label: 'Custom Development' },
+  { value: 'other', label: 'Other' },
+];
+
+export default function CrmLeadModal({ isOpen, onClose }) {
+  const [form, setForm] = useState({ name: '', phone: '', officePhone: '', company: '', interest: '', message: '' });
   const [errors, setErrors] = useState({});
   const [status, setStatus] = useState('idle'); // idle | loading | success | error
   const [serverError, setServerError] = useState('');
 
-  // Auto-close after success
   useEffect(() => {
     if (status !== 'success') return;
-    const t = setTimeout(() => {
-      onClose();
-    }, 3000);
+    const t = setTimeout(() => onClose(), 3000);
     return () => clearTimeout(t);
   }, [status, onClose]);
 
-  // Reset form when modal closes
   useEffect(() => {
     if (!isOpen) {
-      setForm({ name: '', phone: '', message: '' });
+      setForm({ name: '', phone: '', officePhone: '', company: '', interest: '', message: '' });
       setErrors({});
       setStatus('idle');
       setServerError('');
     }
   }, [isOpen]);
 
-  // Close on Escape key
   useEffect(() => {
     const handler = (e) => { if (e.key === 'Escape') onClose(); };
     if (isOpen) window.addEventListener('keydown', handler);
@@ -39,6 +43,7 @@ export default function ContactModal({ isOpen, onClose }) {
     else if (form.name.trim().length > 100) errs.name = 'Max 100 characters.';
     if (!form.phone.trim()) errs.phone = 'Phone number is required.';
     else if (!/^\d[\d\s\-()]{5,14}$/.test(form.phone.trim())) errs.phone = 'Enter a valid phone number.';
+    if (form.company.length > 100) errs.company = 'Max 100 characters.';
     if (form.message.length > 500) errs.message = 'Max 500 characters.';
     return errs;
   };
@@ -46,7 +51,6 @@ export default function ContactModal({ isOpen, onClose }) {
   const handleChange = useCallback((e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
-    // Clear field error on change
     setErrors((prev) => ({ ...prev, [name]: undefined }));
   }, []);
 
@@ -65,8 +69,11 @@ export default function ContactModal({ isOpen, onClose }) {
         body: JSON.stringify({
           name: form.name.trim(),
           phone: form.phone.trim(),
+          officePhone: form.officePhone.trim(),
+          company: form.company.trim(),
+          interest: form.interest,
           message: form.message.trim(),
-          source: 'analytics_engineering',
+          source: 'crm_landing',
         }),
       });
 
@@ -90,36 +97,34 @@ export default function ContactModal({ isOpen, onClose }) {
       className="contact-modal-overlay"
       role="dialog"
       aria-modal="true"
-      aria-labelledby="contact-modal-title"
+      aria-labelledby="crm-modal-title"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div className="contact-modal">
-        {/* Header */}
         <div className="contact-modal-header">
-          <h2 id="contact-modal-title" className="contact-modal-title">
-            <span>💬</span> Let&apos;s Connect
+          <h2 id="crm-modal-title" className="contact-modal-title">
+            <span>🤝</span> Get in Touch
           </h2>
           <button onClick={onClose} className="contact-modal-close" aria-label="Close">✕</button>
         </div>
 
         <p className="contact-modal-subtitle">
-          Leave your details and I&apos;ll get back to you shortly.
+          Leave your details and we&apos;ll get back to you within 24 hours.
         </p>
 
-        {/* Success State */}
         {status === 'success' ? (
           <div className="contact-modal-success">
             <span className="contact-success-icon">✅</span>
             <p className="contact-success-title">Details received!</p>
-            <p className="contact-success-sub">I&apos;ll be in touch soon. Closing in a moment…</p>
+            <p className="contact-success-sub">We&apos;ll be in touch within 24 hours. Closing…</p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} noValidate className="contact-form">
             {/* Name */}
             <div className="contact-field">
-              <label className="contact-label" htmlFor="contact-name">Name *</label>
+              <label className="contact-label" htmlFor="crm-name">Name *</label>
               <input
-                id="contact-name"
+                id="crm-name"
                 name="name"
                 type="text"
                 className={`contact-input ${errors.name ? 'contact-input-error' : ''}`}
@@ -134,9 +139,9 @@ export default function ContactModal({ isOpen, onClose }) {
 
             {/* Phone */}
             <div className="contact-field">
-              <label className="contact-label" htmlFor="contact-phone">Phone *</label>
+              <label className="contact-label" htmlFor="crm-phone">Phone *</label>
               <input
-                id="contact-phone"
+                id="crm-phone"
                 name="phone"
                 type="tel"
                 className={`contact-input ${errors.phone ? 'contact-input-error' : ''}`}
@@ -149,16 +154,72 @@ export default function ContactModal({ isOpen, onClose }) {
               {errors.phone && <span className="contact-field-error">{errors.phone}</span>}
             </div>
 
+            {/* Office Phone */}
+            <div className="contact-field">
+              <label className="contact-label" htmlFor="crm-office-phone">
+                Office Phone <span className="contact-optional">(optional)</span>
+              </label>
+              <input
+                id="crm-office-phone"
+                name="officePhone"
+                type="tel"
+                className="contact-input"
+                placeholder="03 000 0000"
+                value={form.officePhone}
+                onChange={handleChange}
+                disabled={status === 'loading'}
+                autoComplete="tel-local"
+              />
+            </div>
+
+            {/* Company */}
+            <div className="contact-field">
+              <label className="contact-label" htmlFor="crm-company">
+                Company <span className="contact-optional">(optional)</span>
+              </label>
+              <input
+                id="crm-company"
+                name="company"
+                type="text"
+                className={`contact-input ${errors.company ? 'contact-input-error' : ''}`}
+                placeholder="Your company or business"
+                value={form.company}
+                onChange={handleChange}
+                disabled={status === 'loading'}
+                autoComplete="organization"
+              />
+              {errors.company && <span className="contact-field-error">{errors.company}</span>}
+            </div>
+
+            {/* Interest */}
+            <div className="contact-field">
+              <label className="contact-label" htmlFor="crm-interest">
+                I&apos;m interested in <span className="contact-optional">(optional)</span>
+              </label>
+              <select
+                id="crm-interest"
+                name="interest"
+                className="contact-input"
+                value={form.interest}
+                onChange={handleChange}
+                disabled={status === 'loading'}
+              >
+                {INTEREST_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
+              </select>
+            </div>
+
             {/* Message */}
             <div className="contact-field">
-              <label className="contact-label" htmlFor="contact-message">
+              <label className="contact-label" htmlFor="crm-message">
                 Message <span className="contact-optional">(optional)</span>
               </label>
               <textarea
-                id="contact-message"
+                id="crm-message"
                 name="message"
                 className={`contact-input contact-textarea ${errors.message ? 'contact-input-error' : ''}`}
-                placeholder="What would you like to discuss?"
+                placeholder="Tell us about your needs..."
                 value={form.message}
                 onChange={handleChange}
                 disabled={status === 'loading'}
@@ -168,12 +229,10 @@ export default function ContactModal({ isOpen, onClose }) {
               {errors.message && <span className="contact-field-error">{errors.message}</span>}
             </div>
 
-            {/* Server error */}
             {status === 'error' && serverError && (
               <div className="contact-server-error">{serverError}</div>
             )}
 
-            {/* Submit */}
             <button
               type="submit"
               className="btn-primary contact-submit"

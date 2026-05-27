@@ -7,6 +7,7 @@ const navLinks = [
   { href: '/', label: 'Home' },
   { href: '/projects', label: 'Projects' },
   { href: '/payments', label: 'Payments' },
+  { href: '/crm', label: 'CRM Demo' },
 ];
 
 export default function Navbar() {

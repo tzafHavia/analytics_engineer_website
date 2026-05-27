@@ -1,8 +1,9 @@
 // app/api/contact/route.js
 // Receives lead details from the contact form, saves to Supabase `public.leads`,
-// and sends a WhatsApp notification via WhatsApp Business API (Graph API v20.0).
-// lead_notification
+// sends a WhatsApp notification, and optionally creates a Lead in SuiteCRM
+// (when source === 'crm_landing').
 import { createClient } from '@supabase/supabase-js';
+import { isSuiteCRMConfigured, createLead as suitecrmCreateLead } from '@/lib/suitecrmClient';
 
 const WHATSAPP_API_URL = `https://graph.facebook.com/v20.0/${process.env.NEXT_WHATSAPP_PHONE_NUMBER_ID}/messages`;
 
@@ -39,7 +40,15 @@ export async function POST(request) {
   // ── 2. Validate & sanitise inputs ─────────────────────────────────────────
   const name = sanitise(body.name);
   const phone = sanitise(body.phone).replace(/[\s\-()]/g, ''); // strip separators
-  const message = sanitise(body.message).slice(0, 500);
+  const officePhone = sanitise(body.officePhone).replace(/[\s\-()]/g, '').slice(0, 20);
+  const rawMessage = sanitise(body.message).slice(0, 500);
+  // Append office phone to message if provided
+  const message = officePhone
+    ? [rawMessage, `Office Phone: ${officePhone}`].filter(Boolean).join('\n')
+    : rawMessage;
+  const company = sanitise(body.company).slice(0, 100);
+  const interest = sanitise(body.interest).slice(0, 50);
+  const source = sanitise(body.source).slice(0, 50);
 
   if (!name || name.length > 100) {
     return Response.json({ error: 'Name is required (max 100 chars).' }, { status: 400 });
@@ -99,7 +108,14 @@ export async function POST(request) {
     // ── New lead: insert fresh row ────────────────────────────────────────────
     const { error } = await serviceClient
       .from('leads')
-      .insert({ name, phone, message: message || null });
+      .insert({
+        name,
+        phone,
+        message: message || null,
+        source: source || null,
+        company: company || null,
+        interest: interest || null,
+      });
 
     dbError = error;
   }
@@ -191,6 +207,17 @@ export async function POST(request) {
     }
   } else {
     console.warn('[contact] WhatsApp env vars not set — skipping notification');
+  }
+
+  // ── 6. SuiteCRM — create Lead for known sources (non-blocking) ──
+  const SUITECRM_SOURCES = ['crm_landing', 'analytics_engineering'];
+  console.log('[contact] SuiteCRM check — source:', source, '| configured:', isSuiteCRMConfigured());
+  if (SUITECRM_SOURCES.includes(source) && isSuiteCRMConfigured()) {
+    suitecrmCreateLead({ name, phone, company, interest, message, source })
+      .then((leadId) => console.log('[contact] SuiteCRM lead created:', leadId))
+      .catch((err) => console.error('[contact] SuiteCRM error (non-blocking):', err.message));
+  } else if (SUITECRM_SOURCES.includes(source)) {
+    console.warn('[contact] SuiteCRM env vars not set — skipping CRM lead creation');
   }
 
   return Response.json({ success: true });
