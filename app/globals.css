@@ -2341,112 +2341,85 @@ select.contact-input { appearance: none; cursor: pointer; }
 }
 
 /* ══════════════════════════════════════════════════════════
-   PIPELINE ANIMATION — 3D Data Flow Cubes
-   Three cubes (Database → dbt → Dashboard) assemble with
-   animated connectors and flowing data particles.
+   PIPELINE ANIMATION — 3-D Cross Assembly
+   Seven cubes scatter across the scene, spin randomly,
+   then converge right and lock into a 3-D plus that glows.
    ══════════════════════════════════════════════════════════ */
 
 .pa-wrap {
-  padding: 2.5rem 1rem 2rem;
-  text-align: center;
+  width: 100%;
+  overflow: hidden;
   user-select: none;
+  pointer-events: none;
 }
 
-.pa-eyebrow {
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  margin: 0 0 2.75rem;
-}
-
-/* ─── Scene ─── */
 .pa-scene {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  perspective: 1440px;
-  flex-wrap: wrap;
-  gap: 0;
-}
-
-/* ─── Node group ─── */
-.pa-node {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-}
-
-.pa-node-name {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-top: 6px;
-}
-
-.pa-node-sub {
-  font-size: 0.72rem;
-  color: var(--text-muted);
-  letter-spacing: 0.04em;
-}
-
-/* ─── Cube outer wrapper — handles entry animation ─── */
-.pa-cube-outer {
-  width: 91px;
-  height: 91px;
-  perspective: 624px;
-  opacity: 0;
-  animation-name: pa-cube-enter;
-  animation-duration: 1s;
-  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
-  animation-delay: var(--enter-delay, 0s);
-  animation-fill-mode: both;
-}
-
-/* ─── Cube inner — handles sway animation ─── */
-.pa-cube {
-  width: 91px;
-  height: 91px;
   position: relative;
+  width: 100%;
+  height: 240px;
+  perspective: 900px;
+}
+
+/* ─── Assembly anchor — 15 % from the right edge ─── */
+.pa-group {
+  position: absolute;
+  right: 15%;
+  top: 50%;
   transform-style: preserve-3d;
-  transform: rotateX(15deg) rotateY(-18deg);
-  animation-name: pa-cube-sway;
-  animation-duration: 5s;
-  animation-timing-function: ease-in-out;
-  animation-delay: var(--sway-delay, 0.8s);
+}
+
+.pa-group--glowing {
+  animation-name: pa-group-spin;
+  animation-duration: 10s;
+  animation-timing-function: linear;
   animation-iteration-count: infinite;
 }
 
-/* ─── Six faces ─── */
+/* ─── Per-cube position wrapper ─── */
+.pa-cube-wrap {
+  position: absolute;
+  width: 36px;
+  height: 36px;
+  top: -18px;   /* centre on group anchor */
+  left: -18px;
+  transform-style: preserve-3d;
+  /* transform + transition applied via inline styles */
+}
+
+/* ─── Inner cube — handles individual rotation ─── */
+.pa-cube-inner {
+  width: 36px;
+  height: 36px;
+  position: relative;
+  transform-style: preserve-3d;
+}
+
+.pa-cube-inner--floating {
+  /* animationName + animationDuration come from inline style per cube */
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+/* ─── Six faces (36 px cube, translateZ = 18 px = half-size) ─── */
 .pa-face {
   position: absolute;
   inset: 0;
-  width: 91px;
-  height: 91px;
+  width: 36px;
+  height: 36px;
   border: 1px solid rgba(255, 255, 255, 0.07);
   background: rgba(255, 255, 255, 0.025);
 }
 
-.pa-face-front  { transform: translateZ(46px);              display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
-.pa-face-back   { transform: rotateY(180deg)  translateZ(46px); }
-.pa-face-right  { transform: rotateY(90deg)   translateZ(46px); }
-.pa-face-left   { transform: rotateY(-90deg)  translateZ(46px); }
-.pa-face-top    { transform: rotateX(90deg)   translateZ(46px); }
-.pa-face-bottom { transform: rotateX(-90deg)  translateZ(46px); }
+.pa-face-front  { transform: translateZ(18px);               }
+.pa-face-back   { transform: rotateY(180deg)  translateZ(18px); }
+.pa-face-right  { transform: rotateY(90deg)   translateZ(18px); }
+.pa-face-left   { transform: rotateY(-90deg)  translateZ(18px); }
+.pa-face-top    { transform: rotateX(90deg)   translateZ(18px); }
+.pa-face-bottom { transform: rotateX(-90deg)  translateZ(18px); }
 
-.pa-face-icon { font-size: 1.98rem; line-height: 1; }
-.pa-face-text {
-  font-size: 0.58rem;
-  font-weight: 700;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-}
+/* ─── Colour themes ─── */
 
-/* ─── Cube colour themes ─── */
-
-/* Cyan — Database */
+/* Cyan */
 .pa-cube--cyan .pa-face {
   background: rgba(34, 211, 238, 0.05);
   border-color: rgba(34, 211, 238, 0.18);
@@ -2454,13 +2427,9 @@ select.contact-input { appearance: none; cursor: pointer; }
 .pa-cube--cyan .pa-face-front {
   background: rgba(34, 211, 238, 0.13);
   border-color: rgba(34, 211, 238, 0.55);
-  box-shadow:
-    inset 0 0 28px rgba(34, 211, 238, 0.1),
-    0 0 28px rgba(34, 211, 238, 0.18);
-  color: #22d3ee;
 }
 
-/* Orange — dbt */
+/* Orange */
 .pa-cube--orange .pa-face {
   background: rgba(251, 146, 60, 0.05);
   border-color: rgba(251, 146, 60, 0.18);
@@ -2468,13 +2437,9 @@ select.contact-input { appearance: none; cursor: pointer; }
 .pa-cube--orange .pa-face-front {
   background: rgba(251, 146, 60, 0.13);
   border-color: rgba(251, 146, 60, 0.55);
-  box-shadow:
-    inset 0 0 28px rgba(251, 146, 60, 0.1),
-    0 0 28px rgba(251, 146, 60, 0.18);
-  color: #fb923c;
 }
 
-/* Purple — Dashboard */
+/* Purple */
 .pa-cube--purple .pa-face {
   background: rgba(99, 102, 241, 0.05);
   border-color: rgba(99, 102, 241, 0.18);
@@ -2482,111 +2447,49 @@ select.contact-input { appearance: none; cursor: pointer; }
 .pa-cube--purple .pa-face-front {
   background: rgba(99, 102, 241, 0.13);
   border-color: rgba(99, 102, 241, 0.55);
-  box-shadow:
-    inset 0 0 28px rgba(99, 102, 241, 0.1),
-    0 0 28px rgba(99, 102, 241, 0.18);
-  color: #818cf8;
 }
 
-/* ─── Connector arrow ─── */
-.pa-connector {
-  width: 115px;
-  height: 91px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+/* ─── Glow phase ─── */
+.pa-cube--glow.pa-cube--cyan .pa-face {
+  border-color: rgba(34, 211, 238, 0.7);
+  box-shadow: 0 0 12px rgba(34, 211, 238, 0.5), inset 0 0 8px rgba(34, 211, 238, 0.15);
 }
-
-.pa-conn-svg {
-  width: 115px;
-  height: 29px;
-  overflow: visible;
+.pa-cube--glow.pa-cube--orange .pa-face {
+  border-color: rgba(251, 146, 60, 0.7);
+  box-shadow: 0 0 12px rgba(251, 146, 60, 0.5), inset 0 0 8px rgba(251, 146, 60, 0.15);
 }
-
-.pa-conn-line {
-  stroke: rgba(255, 255, 255, 0.2);
-  stroke-width: 1.5;
-  stroke-linecap: round;
-  stroke-dasharray: 75;
-  stroke-dashoffset: 75;
-  animation-name: pa-line-draw;
-  animation-duration: 0.65s;
-  animation-timing-function: ease-out;
-  animation-delay: var(--line-delay, 1.4s);
-  animation-fill-mode: both;
-}
-
-.pa-conn-head {
-  fill: rgba(255, 255, 255, 0.28);
-  opacity: 0;
-  animation-name: pa-fade-in;
-  animation-duration: 0.2s;
-  animation-timing-function: ease-out;
-  animation-delay: var(--head-delay, 1.9s);
-  animation-fill-mode: both;
-}
-
-.pa-conn-dot {
-  fill: var(--cyan);
-  opacity: 0;
-  animation-name: pa-dot-flow;
-  animation-duration: 1.5s;
-  animation-timing-function: ease-in-out;
-  animation-delay: var(--pd, 0s);
-  animation-iteration-count: infinite;
+.pa-cube--glow.pa-cube--purple .pa-face {
+  border-color: rgba(99, 102, 241, 0.7);
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.5), inset 0 0 8px rgba(99, 102, 241, 0.15);
 }
 
 /* ─── Keyframes ─── */
 
-@keyframes pa-cube-enter {
-  0%   { opacity: 0; transform: translateY(-64px) scale(0.35); }
-  55%  { opacity: 1; transform: translateY(8px)   scale(1.06); }
-  100% { opacity: 1; transform: translateY(0)     scale(1); }
+/* 7 distinct spin axes — all values are multiples of 360 deg for smooth looping */
+@keyframes pa-spin-0 { to { transform: rotateX(360deg)  rotateY(720deg)  rotateZ(0deg);    } }
+@keyframes pa-spin-1 { to { transform: rotateX(720deg)  rotateY(-360deg) rotateZ(360deg);  } }
+@keyframes pa-spin-2 { to { transform: rotateX(-360deg) rotateY(360deg)  rotateZ(720deg);  } }
+@keyframes pa-spin-3 { to { transform: rotateX(720deg)  rotateY(360deg)  rotateZ(-360deg); } }
+@keyframes pa-spin-4 { to { transform: rotateX(-360deg) rotateY(720deg)  rotateZ(360deg);  } }
+@keyframes pa-spin-5 { to { transform: rotateX(360deg)  rotateY(-720deg) rotateZ(360deg);  } }
+@keyframes pa-spin-6 { to { transform: rotateX(720deg)  rotateY(-360deg) rotateZ(-360deg); } }
+
+/* Assembled group — slow Y rotation to reveal the 3-D cross from all angles */
+@keyframes pa-group-spin {
+  from { transform: rotateX(18deg) rotateY(0deg); }
+  to   { transform: rotateX(18deg) rotateY(360deg); }
 }
 
-@keyframes pa-cube-sway {
-  0%   { transform: rotateX(15deg) rotateY(-18deg); }
-  25%  { transform: rotateX(20deg) rotateY(4deg); }
-  50%  { transform: rotateX(15deg) rotateY(18deg); }
-  75%  { transform: rotateX(10deg) rotateY(2deg); }
-  100% { transform: rotateX(15deg) rotateY(-18deg); }
-}
-
-@keyframes pa-line-draw {
-  to { stroke-dashoffset: 0; }
-}
-
-@keyframes pa-fade-in {
-  to { opacity: 1; }
-}
-
-@keyframes pa-dot-flow {
-  0%   { opacity: 0;   transform: translateX(0); }
-  8%   { opacity: 1; }
-  88%  { opacity: 1;   transform: translateX(68px); }
-  100% { opacity: 0;   transform: translateX(70px); }
-}
-
-/* ─── Responsive — vertical stack on mobile ─── */
-@media (max-width: 620px) {
-  .pa-scene {
-    flex-direction: column;
-    gap: 0;
-  }
-  .pa-connector {
-    width: 24px;
-    height: 56px;
-    transform: rotate(90deg);
-  }
+/* ─── Responsive ─── */
+@media (max-width: 640px) {
+  .pa-scene { height: 180px; }
+  .pa-group { right: 8%; }
 }
 
 /* ─── Reduced motion ─── */
 @media (prefers-reduced-motion: reduce) {
-  .pa-cube-outer { animation: none; opacity: 1; }
-  .pa-cube       { animation: none; transform: rotateX(15deg) rotateY(10deg); }
-  .pa-conn-line  { animation: none; stroke-dashoffset: 0; }
-  .pa-conn-head  { animation: none; opacity: 1; }
-  .pa-conn-dot   { display: none; }
+  .pa-cube-inner--floating { animation: none !important; }
+  .pa-group--glowing       { animation: none !important; }
+  .pa-cube-wrap            { transition: none !important; }
 }
 
