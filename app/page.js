@@ -1,7 +1,4 @@
 import Link from 'next/link';
-import KpiCard from '@/components/KpiCard';
-import PipelineAnimation from '@/components/PipelineAnimation';
-import { mockKpis } from '@/lib/mockData';
 
 export default function Home() {
   return (
@@ -12,7 +9,6 @@ export default function Home() {
           <span className="eyebrow-dot" />
           Data Analytics Portfolio
         </div>
-        <PipelineAnimation />
         <h1 className="hero-title">
           Turning Raw Data Into
           <span className="hero-highlight"> Actionable Insights</span>
@@ -29,38 +25,6 @@ export default function Home() {
             Live Data Demo
           </Link>
         </div>
-      </section>
-
-      {/* KPI Strip */}
-      <section className="kpi-section">
-        <KpiCard
-          icon="💰"
-          label="Total Revenue"
-          value={`₪${mockKpis.totalRevenue.toLocaleString()}`}
-          sub="All-time"
-          color="purple"
-        />
-        <KpiCard
-          icon="🧾"
-          label="Transactions"
-          value={mockKpis.totalTransactions.toLocaleString()}
-          sub="Processed"
-          color="cyan"
-        />
-        <KpiCard
-          icon="📈"
-          label="Avg. Transaction"
-          value={`₪${mockKpis.avgTransaction}`}
-          sub="Per sale"
-          color="green"
-        />
-        <KpiCard
-          icon="⭐"
-          label="Top Product"
-          value={mockKpis.topProduct}
-          sub="By revenue"
-          color="orange"
-        />
       </section>
 
       {/* Tech Stack */}

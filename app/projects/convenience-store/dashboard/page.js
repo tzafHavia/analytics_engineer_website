@@ -1,11 +1,10 @@
 import Link from 'next/link';
 import OverviewFilters from '@/components/OverviewFilters';
-import KpiCard from '@/components/KpiCard';
 import InventoryStatusDonut from '@/components/InventoryStatusDonut';
 import OverviewDailyPerformanceTable from '@/components/OverviewDailyPerformanceTable';
 import OverviewTopProductsChart from '@/components/OverviewTopProductsChart';
 import OverviewTrendChart from '@/components/OverviewTrendChart';
-import { fetchOverviewDashboardData, fetchOverviewFilterOptions } from '@/lib/pgClient';
+import { fetchOverviewDashboardData, fetchOverviewFilterOptions } from '@/lib/dashboardData';
 
 function formatCurrency(value) {
   return `₪${Number(value || 0).toLocaleString('he-IL', { maximumFractionDigits: 0 })}`;
@@ -47,6 +46,25 @@ function formatFreshness(value) {
 function getDeltaTone(delta) {
   if (delta == null || Math.abs(delta) < 0.1) return 'cyan';
   return delta > 0 ? 'green' : 'orange';
+}
+
+function DashKpiCard({ label, value, sub, color = 'cyan', trend }) {
+  const toneClass =
+    trend > 0.05 ? 'dash-kpi-trend-up' :
+    trend < -0.05 ? 'dash-kpi-trend-down' : 'dash-kpi-trend-flat';
+  const arrow = trend > 0.05 ? '▲' : trend < -0.05 ? '▼' : '–';
+  return (
+    <div className={`dash-kpi-card dash-kpi-${color}`}>
+      <p className="dash-kpi-label">{label}</p>
+      <p className="dash-kpi-value">{value}</p>
+      {sub && <p className="dash-kpi-sub">{sub}</p>}
+      {trend != null && !Number.isNaN(trend) && (
+        <p className={`dash-kpi-trend ${toneClass}`}>
+          {arrow} {Math.abs(trend).toFixed(1)}%
+        </p>
+      )}
+    </div>
+  );
 }
 
 function getSearchParamValue(value) {
@@ -121,7 +139,7 @@ export default async function ConvenienceStoreDashboardPage({ searchParams }) {
         totalUnitsSold: 0,
         outOfStockCount: 0,
         stockoutRiskCount: 0,
-        deadStockCount: 0,
+        avgDaysOfCover: null,
       },
       dailySalesTrend: [],
       ticketTrend: [],
@@ -162,6 +180,7 @@ export default async function ConvenienceStoreDashboardPage({ searchParams }) {
       value: formatPercent(overview.kpis.salesDeltaPct),
       sub: `Compared with ${previousRangeLabel}`,
       color: getDeltaTone(overview.kpis.salesDeltaPct),
+      trend: overview.kpis.salesDeltaPct,
     },
     {
       icon: '🧾',
@@ -199,10 +218,12 @@ export default async function ConvenienceStoreDashboardPage({ searchParams }) {
       color: 'orange',
     },
     {
-      icon: '◌',
-      label: 'Dead stock items',
-      value: formatNumber(overview.kpis.deadStockCount),
-      sub: 'Latest inventory snapshot',
+      icon: '📊',
+      label: 'Avg days of cover',
+      value: overview.kpis.avgDaysOfCover != null
+        ? `${Number(overview.kpis.avgDaysOfCover).toFixed(1)}d`
+        : '—',
+      sub: 'Avg stock coverage across SKUs (30d)',
       color: 'cyan',
     },
   ];
@@ -278,9 +299,16 @@ export default async function ConvenienceStoreDashboardPage({ searchParams }) {
           </div>
         </div>
 
-        <div className="kpi-section od-kpi-grid">
+        <div className="dash-kpi-dark-grid">
           {kpiCards.map((card) => (
-            <KpiCard key={card.label} {...card} />
+            <DashKpiCard
+              key={card.label}
+              label={card.label}
+              value={card.value}
+              sub={card.sub}
+              color={card.color}
+              trend={card.trend}
+            />
           ))}
         </div>
       </section>
@@ -312,6 +340,9 @@ export default async function ConvenienceStoreDashboardPage({ searchParams }) {
           lineColor="#6366f1"
           valueFormat="currency-compact"
           footerLink={{ href: '#recent-performance', label: 'View daily detail' }}
+          secondaryLines={[
+            { dataKey: 'avg7d', name: '7-day avg', color: '#94a3b8', dashed: true },
+          ]}
         />
         <OverviewTrendChart
           title="Ticket count trend"

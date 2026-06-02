@@ -121,8 +121,8 @@ function ChartPlaceholder({ title, description, type = 'bar', height = 240 }) {
       {(type === 'bar' || type === 'line') && (
         <div className="chart-ph-x-axis">
           {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun', 'Mon', 'Tue', 'Wed'].map(
-            (d) => (
-              <span key={d}>{d}</span>
+            (d, i) => (
+              <span key={i}>{d}</span>
             )
           )}
         </div>
@@ -210,14 +210,14 @@ export default async function ConvenienceStorePage() {
 
           {/* Buttons */}
           <div className="cs-hero-actions">
-            <Link href="/projects/convenience-store/dashboard" className="btn-outline">
-              Overview Dashboard ↗
+            <Link href="/projects/convenience-store/dashboard" className="btn-primary btn-dashboard-cta">
+              📊 Open Live Dashboard ↗
             </Link>
             <a
               href="https://github.com/HomeDigSoftware/local_store_pipeline"
               target="_blank"
               rel="noopener noreferrer"
-              className="btn-primary"
+              className="btn-outline"
             >
               GitHub ↗
             </a>

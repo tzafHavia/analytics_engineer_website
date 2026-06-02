@@ -3,10 +3,10 @@
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 
 const STATUS_COLORS = {
-  OUT_OF_STOCK: '#ef4444',
+  OUT_OF_STOCK:  '#ef4444',
   STOCKOUT_RISK: '#f59e0b',
-  OVERSTOCK: '#22c55e',
-  DEAD_STOCK: '#94a3b8',
+  OVERSTOCK:     '#22c55e',
+  DEAD_STOCK:    '#94a3b8',
 };
 
 function InventoryTooltip({ active, payload }) {

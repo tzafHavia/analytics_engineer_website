@@ -56,6 +56,7 @@ export default function OverviewTrendChart({
   lineColor = '#6366f1',
   valueFormat = 'number',
   footerLink,
+  secondaryLines = [],
 }) {
   if (!data.length) {
     return (
@@ -122,6 +123,19 @@ export default function OverviewTrendChart({
               dot={{ r: 2, strokeWidth: 0, fill: lineColor }}
               activeDot={{ r: 5, fill: lineColor }}
             />
+            {secondaryLines.map((line) => (
+              <Line
+                key={line.dataKey}
+                type="monotone"
+                dataKey={line.dataKey}
+                name={line.name || line.dataKey}
+                stroke={line.color || '#94a3b8'}
+                strokeWidth={line.strokeWidth ?? 2}
+                strokeDasharray={line.dashed ? '5 3' : undefined}
+                dot={false}
+                activeDot={{ r: 4, fill: line.color || '#94a3b8' }}
+              />
+            ))}
           </LineChart>
         </ResponsiveContainer>
       </div>

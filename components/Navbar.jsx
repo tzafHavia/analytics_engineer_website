@@ -1,11 +1,13 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { useTheme } from '@/components/ThemeProvider';
 
 const navLinks = [
   { href: '/', label: 'Home' },
   { href: '/projects', label: 'Projects' },
+  { href: '/projects/convenience-store/dashboard', label: 'Executive Dashboard' },
   { href: '/payments', label: 'Payments' },
   { href: '/crm', label: 'CRM Demo' },
 ];
@@ -13,6 +15,11 @@ const navLinks = [
 export default function Navbar() {
   const pathname = usePathname();
   const { theme, toggle } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <nav className="navbar">
@@ -33,7 +40,7 @@ export default function Navbar() {
             <Link
               key={link.href}
               href={link.href}
-              className={`nav-link ${pathname === link.href ? 'nav-link-active' : ''}`}
+              className={`nav-link ${mounted && pathname === link.href ? 'nav-link-active' : ''}`}
             >
               {link.label}
             </Link>
