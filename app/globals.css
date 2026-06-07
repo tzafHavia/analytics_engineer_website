@@ -955,6 +955,119 @@ code, pre {
   gap: 1.75rem;
 }
 
+/* ── Dashboard Tab Navigation ─────────────────────────────────────────── */
+.dash-tab-nav {
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.35rem;
+  background: var(--gradient-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  flex-shrink: 0;
+}
+.dash-tab-nav::-webkit-scrollbar { display: none; }
+
+.dash-tab-link {
+  flex-shrink: 0;
+  padding: 0.5rem 1.1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.dash-tab-link:hover {
+  background: rgba(99,102,241,0.09);
+  color: var(--text-primary);
+}
+.dash-tab-link[aria-current="page"] {
+  background: rgba(99,102,241,0.2);
+  color: #818cf8;
+  font-weight: 600;
+}
+
+/* ── Tab placeholder (coming-soon panels for unbuilt tabs) ────────────── */
+.dash-tab-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  padding: 4rem 2rem;
+  text-align: center;
+  background: var(--gradient-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+}
+.dash-tab-placeholder-emoji { font-size: 2.5rem; }
+.dash-tab-placeholder h2 {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+.dash-tab-placeholder-desc {
+  max-width: 480px;
+  line-height: 1.65;
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+}
+.dash-tab-placeholder-features {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  text-align: left;
+}
+.dash-tab-placeholder-features li {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  padding-left: 1.25rem;
+  position: relative;
+  line-height: 1.5;
+}
+.dash-tab-placeholder-features li::before {
+  content: '—';
+  position: absolute;
+  left: 0;
+  color: #6366f1;
+}
+.dash-tab-placeholder-tables {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  justify-content: center;
+}
+.dash-tab-placeholder-table-chip {
+  font-size: 0.72rem;
+  font-family: monospace;
+  padding: 0.2rem 0.55rem;
+  background: rgba(99,102,241,0.08);
+  border: 1px solid rgba(99,102,241,0.2);
+  border-radius: 6px;
+  color: #818cf8;
+}
+.dash-tab-placeholder-disclaimer {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  border-top: 1px solid var(--border);
+  padding-top: 1rem;
+  font-style: italic;
+  max-width: 420px;
+}
+
+/* ── Hero compact mode (non-overview tabs: single column) ─────────────── */
+.od-hero--compact {
+  grid-template-columns: 1fr;
+}
+
 .od-hero {
   display: grid;
   grid-template-columns: minmax(0, 1.6fr) minmax(280px, 0.9fr);
@@ -2465,5 +2578,56 @@ select.contact-input { appearance: none; cursor: pointer; }
 @keyframes crm-pulse-green {
   0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(74,222,128,0.5); }
   50%       { opacity: 0.75; box-shadow: 0 0 0 4px rgba(74,222,128,0); }
+}
+
+/* =============================================
+   INVENTORY TAB
+   ============================================= */
+
+/* ── Red KPI card variant (Out-of-stock) ──────────────────────────────────── */
+.dash-kpi-red { border-top: 2px solid rgba(239,68,68,0.55); }
+
+/* ── Stock status badges ──────────────────────────────────────────────────── */
+.inv-badge {
+  display: inline-block;
+  font-size: 0.71rem;
+  font-weight: 600;
+  padding: 0.18rem 0.55rem;
+  border-radius: 99px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+.inv-badge-red   { background: rgba(239,68,68,0.12);   color: #f87171; border-color: rgba(239,68,68,0.3); }
+.inv-badge-amber { background: rgba(245,158,11,0.12);  color: #fbbf24; border-color: rgba(245,158,11,0.3); }
+.inv-badge-green { background: rgba(34,197,94,0.12);   color: #4ade80; border-color: rgba(34,197,94,0.3); }
+.inv-badge-gray  { background: rgba(148,163,184,0.12); color: #94a3b8; border-color: rgba(148,163,184,0.3); }
+.inv-badge-blue  { background: rgba(34,211,238,0.10);  color: #22d3ee; border-color: rgba(34,211,238,0.25); }
+
+/* ── Action table sections ────────────────────────────────────────────────── */
+.inv-action-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.inv-action-panel-red   { border-left: 3px solid rgba(239,68,68,0.6); }
+.inv-action-panel-green { border-left: 3px solid rgba(34,197,94,0.6); }
+.inv-action-panel-gray  { border-left: 3px solid rgba(148,163,184,0.4); }
+
+.inv-action-text {
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  white-space: normal;
+  max-width: 260px;
+}
+
+/* ── Scatter legend row ───────────────────────────────────────────────────── */
+.inv-scatter-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border-light);
 }
 
