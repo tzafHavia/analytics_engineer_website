@@ -11,10 +11,9 @@ const WHATSAPP_API_URL = `https://graph.facebook.com/v20.0/${process.env.NEXT_WH
 // SUPABASE_SERVICE_ROLE_KEY must NOT have the NEXT_PUBLIC_ prefix (server-only).
 function getServiceClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key_01 = process.env.NEXT_SUPABASE_SERVICE_ROLE_KEY;
   const key = process.env.NEXT_SUPABASE_SECRET_KEY;
   // if (!url || !key) throw new Error('Missing Supabase service role env vars (NEXT_SUPABASE_SERVICE_ROLE_KEY)');
-  if (!url || !key) throw new Error('Missing Supabase service role env vars (NEXT_SUPABASE_SERVICE_ROLE_KEY)');
+  if (!url || !key) throw new Error('Missing  Supabase service role env vars (NEXT_SUPABASE_SECRET_KEY)');
   return createClient(url, key);
 }
 
