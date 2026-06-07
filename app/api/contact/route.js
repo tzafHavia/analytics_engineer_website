@@ -11,11 +11,11 @@ const WHATSAPP_API_URL = `https://graph.facebook.com/v20.0/${process.env.NEXT_WH
 // SUPABASE_SERVICE_ROLE_KEY must NOT have the NEXT_PUBLIC_ prefix (server-only).
 function getServiceClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_SUPABASE_SERVICE_ROLE_KEY;
-  const key02_TEST = process.env.NEXT_SUPABASE_SECRET_KEY;
+  const key_01 = process.env.NEXT_SUPABASE_SERVICE_ROLE_KEY;
+  const key = process.env.NEXT_SUPABASE_SECRET_KEY;
   // if (!url || !key) throw new Error('Missing Supabase service role env vars (NEXT_SUPABASE_SERVICE_ROLE_KEY)');
-  if (!url || !key02_TEST) throw new Error('Missing Supabase service role env vars (NEXT_SUPABASE_SERVICE_ROLE_KEY)');
-  return createClient(url, key02_TEST);
+  if (!url || !key) throw new Error('Missing Supabase service role env vars (NEXT_SUPABASE_SERVICE_ROLE_KEY)');
+  return createClient(url, key);
 }
 
 // Sanitise a string: trim and strip any HTML tags
