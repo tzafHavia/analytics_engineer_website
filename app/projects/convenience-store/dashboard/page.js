@@ -166,12 +166,16 @@ export default async function ConvenienceStoreDashboardPage({ searchParams }) {
   );
   const activeFilterChips = getActiveFilterChips(overview.activeFilters || filters);
 
+  const noDataMsg = overview.latestSaleDate
+    ? `No data for this period. Latest available date: ${overview.latestSaleDate}.`
+    : 'No data available.';
+
   const kpiCards = [
     {
       icon: '₪',
       label: 'Total sales',
       value: formatCurrency(overview.kpis.totalSales),
-      sub: `Current 30 days · ${currentRangeLabel}`,
+      sub: currentRangeLabel,
       color: 'green',
     },
     {
@@ -186,7 +190,7 @@ export default async function ConvenienceStoreDashboardPage({ searchParams }) {
       icon: '🧾',
       label: 'Total tickets',
       value: formatNumber(overview.kpis.totalTickets),
-      sub: 'Current 30-day transaction volume',
+      sub: currentRangeLabel,
       color: 'purple',
     },
     {
@@ -200,7 +204,7 @@ export default async function ConvenienceStoreDashboardPage({ searchParams }) {
       icon: '📦',
       label: 'Total units sold',
       value: formatNumber(overview.kpis.totalUnitsSold),
-      sub: 'Current 30-day volume',
+      sub: currentRangeLabel,
       color: 'purple',
     },
     {
@@ -311,6 +315,14 @@ export default async function ConvenienceStoreDashboardPage({ searchParams }) {
             />
           ))}
         </div>
+        {overview.kpis.totalSales === 0 && overview.kpis.totalTickets === 0 && (
+          <p className="od-no-data-notice">
+            ⚠ No sales data found for <strong>{currentRangeLabel}</strong>.
+            {overview.latestSaleDate && (
+              <> Latest available date: <strong>{overview.latestSaleDate}</strong>.</>
+            )}
+          </p>
+        )}
       </section>
 
       {activeFilterChips.length ? (
@@ -334,7 +346,7 @@ export default async function ConvenienceStoreDashboardPage({ searchParams }) {
       <section className="od-two-col-grid od-section-spacing">
         <OverviewTrendChart
           title="Daily sales trend"
-          description="Revenue by day across the latest 30-day operational window."
+          description={`Revenue by day · ${currentRangeLabel}`}
           data={overview.dailySalesTrend}
           dataKey="sales"
           lineColor="#6366f1"
@@ -343,15 +355,17 @@ export default async function ConvenienceStoreDashboardPage({ searchParams }) {
           secondaryLines={[
             { dataKey: 'avg7d', name: '7-day avg', color: '#94a3b8', dashed: true },
           ]}
+          noDataMessage={noDataMsg}
         />
         <OverviewTrendChart
           title="Ticket count trend"
-          description="Daily transaction count to track basket frequency and footfall intensity."
+          description={`Daily transaction count · ${currentRangeLabel}`}
           data={overview.ticketTrend}
           dataKey="tickets"
           lineColor="#22d3ee"
           valueFormat="number"
           footerLink={{ href: '#recent-performance', label: 'Inspect daily rows' }}
+          noDataMessage={noDataMsg}
         />
       </section>
 
@@ -363,6 +377,7 @@ export default async function ConvenienceStoreDashboardPage({ searchParams }) {
         />
         <InventoryStatusDonut
           data={overview.inventoryDistribution}
+          snapshotDate={overview.inventoryDistribution[0]?.snapshotDate ?? null}
           footerLink={{ href: '#inventory-mix', label: 'Latest inventory split' }}
         />
       </section>
@@ -370,14 +385,13 @@ export default async function ConvenienceStoreDashboardPage({ searchParams }) {
       <section className="od-panel od-section-spacing" id="recent-performance">
         <div className="od-panel-head">
           <div>
-            <p className="od-panel-kicker">Detail table</p>
-            <h3>Recent daily performance summary</h3>
+            <p className="od-panel-kicker">Detail table · {currentRangeLabel}</p>
+            <h3>Daily performance summary</h3>
           </div>
           <span className="od-faint-note">Sortable columns</span>
         </div>
         <p className="od-panel-copy">
-          Recent daily summary rows, sorted by newest date by default and available
-          for quick comparison across revenue, units, tickets, and average basket value.
+          All days in the selected period, sorted newest first. Adjust the date filter above to change the range.
         </p>
         <OverviewDailyPerformanceTable rows={overview.recentDailyPerformance} />
       </section>

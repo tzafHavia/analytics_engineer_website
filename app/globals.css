@@ -998,6 +998,16 @@ code, pre {
   font-size: 0.78rem;
 }
 
+.od-no-data-notice {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  background: rgba(251,146,60,0.08);
+  border: 1px solid rgba(251,146,60,0.25);
+  border-radius: 8px;
+  font-size: 0.82rem;
+  color: #fb923c;
+}
+
 .od-freshness-pill {
   color: var(--green);
   background: rgba(74,222,128,0.1);

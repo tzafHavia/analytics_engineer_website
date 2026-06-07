@@ -22,7 +22,7 @@ function InventoryTooltip({ active, payload }) {
   );
 }
 
-export default function InventoryStatusDonut({ data = [], footerLink }) {
+export default function InventoryStatusDonut({ data = [], footerLink, snapshotDate }) {
   if (!data.length) {
     return (
       <div className="od-panel od-panel-empty">
@@ -50,7 +50,7 @@ export default function InventoryStatusDonut({ data = [], footerLink }) {
     <div className="od-panel" id="inventory-mix">
       <div className="od-panel-head">
         <div>
-          <p className="od-panel-kicker">Inventory</p>
+          <p className="od-panel-kicker">Inventory · {snapshotDate ? `Snapshot ${snapshotDate}` : 'Latest snapshot'}</p>
           <h3>Stock status distribution</h3>
         </div>
         {footerLink ? (
@@ -59,7 +59,7 @@ export default function InventoryStatusDonut({ data = [], footerLink }) {
           </a>
         ) : null}
       </div>
-      <p className="od-panel-copy">Latest inventory snapshot mix, highlighting stock risk and excess inventory concentration.</p>
+      <p className="od-panel-copy">Current inventory state by stock status. This always reflects the latest snapshot — not filtered by date range.</p>
       <div className="od-donut-layout">
         <div className="od-chart-shell od-chart-shell-donut">
           <ResponsiveContainer width="100%" height={280}>

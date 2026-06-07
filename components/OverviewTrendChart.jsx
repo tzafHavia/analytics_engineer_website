@@ -57,6 +57,7 @@ export default function OverviewTrendChart({
   valueFormat = 'number',
   footerLink,
   secondaryLines = [],
+  noDataMessage,
 }) {
   if (!data.length) {
     return (
@@ -70,7 +71,7 @@ export default function OverviewTrendChart({
         <p className="od-panel-copy">{description}</p>
         <div className="table-empty od-empty-card">
           <span>∅</span>
-          <p>No data returned for this trend.</p>
+          <p>{noDataMessage || 'No data for this period.'}</p>
         </div>
       </div>
     );
