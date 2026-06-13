@@ -2713,3 +2713,473 @@ select.contact-input { appearance: none; cursor: pointer; }
   border-top: 1px solid var(--border-light);
 }
 
+
+/* =============================================
+   TEST DASHBOARD (/test-dash) — baseline (ui-designer elevates this)
+   `td-` prefix · additive only
+   ============================================= */
+.td-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  width: 100%;
+}
+.td-header { margin-bottom: 2rem; }
+.td-eyebrow {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.td-title {
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0.3rem 0;
+}
+.td-subtitle { color: var(--text-secondary); font-size: 0.95rem; }
+
+.td-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+}
+@media (max-width: 900px) { .td-kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 520px) { .td-kpi-grid { grid-template-columns: 1fr; } }
+
+/* ── Luxury KPI card ──────────────────────────────────────────────────────
+   Glassmorphism + metallic gradient ring + per-accent jewel tones.
+   Keyframes (td-rise, td-shimmer) live in an inline <style> on the page
+   (Turbopack drops @keyframes from globals.css) — here we only reference them. */
+.td-kpi-card {
+  /* shimmer sheen colour — light sheen on the dark theme by default */
+  --td-shimmer-color: rgba(255, 255, 255, 0.10);
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  background: linear-gradient(155deg, var(--bg-card-hover), var(--bg-card));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.6rem 1.5rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(12px) saturate(125%);
+  -webkit-backdrop-filter: blur(12px) saturate(125%);
+  opacity: 0;                                   /* entrance start state */
+  animation: td-rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation-delay: var(--td-delay, 0ms);
+  transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1),
+              box-shadow 0.35s ease, border-color 0.35s ease;
+}
+.td-kpi-card {
+  cursor: pointer;
+}
+.td-kpi-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.5), var(--shadow-glow);
+}
+.td-kpi-card:focus-visible {
+  outline: none;
+  border-color: var(--td-accent-line);
+  box-shadow: 0 0 0 2px var(--bg-base), 0 0 0 4px var(--td-accent-line), var(--shadow-glow);
+}
+.td-kpi-card:active {
+  transform: translateY(-2px) scale(0.992);
+}
+
+/* Click feedback: a one-shot accent ripple from the card centre. The
+   td-tap-pulse keyframe lives in the page's inline <style> (Turbopack rule). */
+.td-kpi-card .td-kpi-tap {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  border-radius: inherit;
+  opacity: 0;
+  background: radial-gradient(circle at center, var(--td-accent-soft) 0%, transparent 60%);
+}
+.td-kpi-card.td-kpi-tapped .td-kpi-tap {
+  animation: td-tap-pulse 0.55s ease-out;
+}
+
+/* Re-rise on time-window switch (td-reenter keyframe lives in the page <style>).
+   Overrides the entrance animation; staggered via --td-reenter-delay. */
+.td-kpi-card.td-kpi-reenter {
+  animation: td-reenter 0.42s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation-delay: var(--td-reenter-delay, 0ms);
+}
+
+/* metallic gradient border ring (accent-coloured) */
+.td-kpi-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: var(--td-accent-grad);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  opacity: 0.6;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* diagonal light sheen sweeping across the card */
+.td-kpi-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(115deg, transparent 32%, var(--td-shimmer-color) 50%, transparent 68%);
+  transform: translateX(-130%);
+  animation: td-shimmer 6s ease-in-out infinite;
+  animation-delay: var(--td-delay, 0ms);
+}
+
+/* Light theme: a near-white card swallows a white sheen, so sweep a darker
+   tinted band instead — visible but still soft. */
+[data-theme="light"] .td-kpi-card {
+  --td-shimmer-color: rgba(15, 23, 42, 0.12);
+}
+
+.td-kpi-accent-bar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--td-accent-grad);
+  z-index: 2;
+}
+.td-kpi-watermark {
+  position: absolute;
+  right: -0.4rem; bottom: -0.9rem;
+  font-size: 4.6rem;
+  line-height: 1;
+  opacity: 0.06;
+  filter: grayscale(1);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.td-kpi-top { display: flex; align-items: center; gap: 0.6rem; position: relative; z-index: 2; }
+.td-kpi-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px; height: 32px;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  background: var(--td-accent-soft);
+  border: 1px solid var(--td-accent-line);
+}
+.td-kpi-label {
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-secondary);
+}
+.td-kpi-value {
+  position: relative;
+  z-index: 2;
+  font-size: clamp(1.9rem, 3vw, 2.5rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+/* ── Accent jewel tones (one per card) ──────────────────────────────────── */
+.td-kpi-gold {
+  --td-accent-grad: linear-gradient(135deg, #f6da82 0%, #b8860b 100%);
+  --td-accent-soft: rgba(212, 175, 55, 0.14);
+  --td-accent-line: rgba(212, 175, 55, 0.42);
+}
+.td-kpi-platinum {
+  --td-accent-grad: linear-gradient(135deg, #eef2f8 0%, #9fb0c8 100%);
+  --td-accent-soft: rgba(191, 205, 224, 0.16);
+  --td-accent-line: rgba(191, 205, 224, 0.45);
+}
+.td-kpi-emerald {
+  --td-accent-grad: linear-gradient(135deg, #5eead4 0%, #0f9d70 100%);
+  --td-accent-soft: rgba(0, 212, 170, 0.14);
+  --td-accent-line: rgba(0, 212, 170, 0.42);
+}
+.td-kpi-sapphire {
+  --td-accent-grad: linear-gradient(135deg, #7db1ff 0%, #2f5fd0 100%);
+  --td-accent-soft: rgba(79, 140, 255, 0.14);
+  --td-accent-line: rgba(79, 140, 255, 0.42);
+}
+
+/* Respect reduced-motion: no entrance/shimmer, keep static luxury look */
+@media (prefers-reduced-motion: reduce) {
+  .td-kpi-card { animation: none; opacity: 1; }
+  .td-kpi-card::after { animation: none; display: none; }
+  .td-kpi-card:active { transform: none; }
+  .td-kpi-card.td-kpi-tapped .td-kpi-tap { animation: none; }
+  /* P3-4: no re-rise on switch — values just update in place. */
+  .td-kpi-card.td-kpi-reenter { animation: none; opacity: 1; transform: none; }
+}
+
+/* ── Time-range controls (P3-3 · luxury, harmonised with the KPI cards) ────
+   Glass track + masked gradient active segment + custom glass selects.
+   Theme-safe: CSS variables only. No @keyframes here (Turbopack drops them;
+   the active-pill slide is the animator's job in P3-4) — static + transition. */
+.td-controls {
+  /* control palette uses the brand blue as its jewel tone, matching sapphire */
+  --td-ctrl-grad: linear-gradient(135deg, #7db1ff 0%, #2f5fd0 100%);
+  --td-ctrl-soft: rgba(79, 140, 255, 0.14);
+  --td-ctrl-line: rgba(79, 140, 255, 0.42);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1.25rem;
+  margin-bottom: 1.75rem;
+}
+
+/* Segmented switch — inset glass track holding the buttons. */
+.td-seg {
+  position: relative;
+  display: inline-flex;
+  padding: 5px;
+  gap: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: linear-gradient(155deg, var(--bg-card-hover), var(--bg-card));
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.35),
+              inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(10px) saturate(120%);
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
+}
+[data-theme="light"] .td-seg {
+  box-shadow: inset 0 1px 3px rgba(15, 23, 42, 0.06),
+              inset 0 0 0 1px rgba(15, 23, 42, 0.02);
+}
+/* Sliding active highlight ("thumb"). Carries the jewel fill that used to live
+   on .is-active; positioned from --seg-index on the track and eased between
+   segments. @keyframes are not needed — a transform transition does it.
+   Geometry: track padding 5px, gap 4px, --seg-count equal segments. */
+.td-seg-thumb {
+  position: absolute;
+  top: 5px;
+  bottom: 5px;
+  left: 5px;
+  z-index: 0;
+  pointer-events: none;
+  width: calc((100% - 10px - (var(--seg-count, 3) - 1) * 4px) / var(--seg-count, 3));
+  border-radius: calc(var(--radius-sm) - 3px);
+  background: var(--td-ctrl-grad);
+  box-shadow: 0 4px 14px rgba(47, 95, 208, 0.4),
+              inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transform: translateX(calc(var(--seg-index, 0) * (100% + 4px)));
+  transition: transform 0.32s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+/* Metallic top-edge ring on the thumb (matches the old .is-active::before). */
+.td-seg-thumb::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  pointer-events: none;
+}
+
+.td-seg-btn {
+  position: relative;
+  z-index: 1;
+  appearance: none;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  padding: 0.5rem 1.15rem;
+  border-radius: calc(var(--radius-sm) - 3px);
+  transition: color 0.25s ease, background-color 0.25s ease, box-shadow 0.25s ease;
+}
+.td-seg-btn:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.04);
+}
+[data-theme="light"] .td-seg-btn:hover {
+  background: rgba(15, 23, 42, 0.04);
+}
+.td-seg-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--bg-base), 0 0 0 4px var(--td-ctrl-line);
+}
+/* Active segment: the jewel fill now lives on the sliding .td-seg-thumb behind
+   the labels, so the active button only needs the white text (and no hover bg).
+   Keeping the .is-active contract intact. */
+.td-seg-btn.is-active {
+  color: #fff;
+}
+.td-seg-btn.is-active:hover {
+  color: #fff;
+  background: transparent;
+}
+[data-theme="light"] .td-seg-btn.is-active:hover {
+  background: transparent;
+}
+
+/* Month / Year selects — glass field + label, matching the cards. */
+.td-control-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1rem;
+}
+.td-control-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.td-control-field > span {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+}
+.td-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  cursor: pointer;
+  padding: 0.55rem 2.2rem 0.55rem 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-card);
+  background-image: linear-gradient(155deg, var(--bg-card-hover), var(--bg-card));
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  min-width: 96px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(10px) saturate(120%);
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.2s ease;
+}
+[data-theme="light"] .td-select {
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.05);
+}
+/* custom chevron — a small wrapper carries the SVG so it stays themeable */
+.td-select-wrap {
+  position: relative;
+  display: inline-flex;
+}
+.td-select-wrap::after {
+  content: '';
+  position: absolute;
+  right: 0.85rem;
+  top: 50%;
+  width: 9px;
+  height: 9px;
+  border-right: 2px solid var(--text-secondary);
+  border-bottom: 2px solid var(--text-secondary);
+  transform: translateY(-65%) rotate(45deg);
+  pointer-events: none;
+  transition: border-color 0.25s ease;
+}
+.td-select-wrap:hover::after { border-color: var(--blue); }
+.td-select:hover {
+  border-color: var(--td-ctrl-line);
+}
+.td-select:focus-visible {
+  outline: none;
+  border-color: var(--td-ctrl-line);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.25),
+              0 0 0 3px var(--td-ctrl-soft),
+              var(--shadow-glow);
+}
+[data-theme="light"] .td-select:focus-visible {
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.05),
+              0 0 0 3px var(--td-ctrl-soft),
+              var(--shadow-glow);
+}
+/* dropdown option list — themed where the OS honours it */
+.td-select option {
+  background: var(--bg-card);
+  color: var(--text-primary);
+}
+
+/* Range-dependent sub-selector (P35-3) — reuses .td-control-field/.td-select but
+   reads as its own group: a hair of extra gap + a thin vertical divider set it
+   apart from the month/year pair, and the micro-label picks up the active range's
+   jewel tone so it feels tied to the segmented switch. Restrained on purpose. */
+.td-subfilter {
+  position: relative;
+  margin-left: 0.5rem;
+  padding-left: 1.25rem;
+  /* P35-4: entrance on mount (day/week). The element is unmounted in month
+     mode, so a mount-time keyframe is the robust way to animate "appear".
+     Keyframe (td-subfilter-in) lives in the page <style> — Turbopack drops
+     @keyframes from globals.css. */
+  animation: td-subfilter-in 0.3s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.td-subfilter::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.1rem;
+  bottom: 0.1rem;
+  width: 1px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    var(--border) 18%,
+    var(--border) 82%,
+    transparent
+  );
+  pointer-events: none;
+}
+/* micro-label tinted with the control jewel tone (matches the active segment) */
+.td-subfilter > span {
+  color: var(--blue);
+}
+/* the active-range accent also warms the field's resting border a touch */
+.td-subfilter .td-select {
+  border-color: var(--td-ctrl-line);
+}
+
+/* On narrow screens the fields stack, so the sub-filter's vertical divider +
+   extra inset would read as a stray line — drop them and let it sit flush. */
+@media (max-width: 520px) {
+  .td-subfilter {
+    margin-left: 0;
+    padding-left: 0;
+  }
+  .td-subfilter::before { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .td-seg-btn,
+  .td-select,
+  .td-select-wrap::after { transition: none; }
+  /* P3-4: thumb jumps instantly to the selected segment (no slide). */
+  .td-seg-thumb { transition: none; }
+  /* P35-4: sub-selector appears instantly (no entrance reveal). */
+  .td-subfilter { animation: none; opacity: 1; transform: none; clip-path: none; }
+}
+
+.td-charts-placeholder {
+  margin-top: 2.5rem;
+  padding: 2.5rem;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  text-align: center;
+  color: var(--text-muted);
+}

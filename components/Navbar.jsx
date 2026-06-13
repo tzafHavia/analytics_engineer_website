@@ -10,6 +10,7 @@ const navLinks = [
   { href: '/projects/convenience-store/dashboard', label: 'Executive Dashboard' },
   { href: '/payments', label: 'Payments' },
   { href: '/crm', label: 'CRM Demo' },
+  { href: '/test-dash', label: 'test_dash' },
 ];
 
 export default function Navbar() {
