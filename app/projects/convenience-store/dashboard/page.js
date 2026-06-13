@@ -285,6 +285,11 @@ export default async function ConvenienceStoreDashboardPage({ searchParams }) {
     ? `No data for this period. Latest available date: ${overview.latestSaleDate}.`
     : 'No data available.';
 
+  // Active category/item scope — shown as a badge on the trend charts when set.
+  const scopeLabel = isOverview && overview
+    ? (overview.activeFilters?.itemName || overview.activeFilters?.productCategory || null)
+    : null;
+
   const kpiCards = (isOverview && overview) ? [
     {
       label: 'Total sales',
@@ -466,23 +471,25 @@ export default async function ConvenienceStoreDashboardPage({ searchParams }) {
               description={`Revenue by day · ${currentRangeLabel}`}
               data={overview.dailySalesTrend}
               dataKey="sales"
-              lineColor="#6366f1"
+              lineColor="#4F8CFF"
               valueFormat="currency-compact"
               footerLink={{ href: '#recent-performance', label: 'View daily detail' }}
               secondaryLines={[
                 { dataKey: 'avg7d', name: '7-day avg', color: '#94a3b8', dashed: true },
               ]}
               noDataMessage={noDataMsg}
+              activeLabel={scopeLabel}
             />
             <OverviewTrendChart
               title="Ticket count trend"
               description={`Daily transaction count · ${currentRangeLabel}`}
               data={overview.ticketTrend}
               dataKey="tickets"
-              lineColor="#22d3ee"
+              lineColor="#00D4AA"
               valueFormat="number"
               footerLink={{ href: '#recent-performance', label: 'Inspect daily rows' }}
               noDataMessage={noDataMsg}
+              activeLabel={scopeLabel}
             />
           </section>
 

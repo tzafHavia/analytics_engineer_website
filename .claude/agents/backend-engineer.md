@@ -64,6 +64,19 @@ stock_status values:  'OUT_OF_STOCK', 'STOCKOUT_RISK', 'OVERSTOCK', 'DEAD_STOCK'
 
 **Note:** `rpt_workforce_productivity_summary` does NOT exist. Use `rpt_employee_productivity` + `int_workforce__daily_*` tables for the Workforce tab.
 
+### Daily sales × category (for category-scoped time series)
+No `rpt_` table has date × category granularity. To rescope a daily trend by
+category or item, join the daily-product fact to the product dimension:
+```sql
+SELECT d.sale_date, SUM(d.net_sales_amount) AS sales, SUM(d.tickets_count) AS tickets
+FROM store_pipeline.int_sales__daily_product d           -- sale_date, item_id, sold_qty, net_sales_amount, tickets_count
+JOIN store_pipeline.dim_product p ON p.item_id = d.item_id -- item_id → category_name, item_name (item_id is UNIQUE)
+WHERE d.sale_date BETWEEN $1 AND $2 AND p.category_name = $3
+GROUP BY d.sale_date ORDER BY d.sale_date
+```
+Implemented in `fetchOverviewDashboardData()` (the `isScoped` branch). Category
+names in `dim_product.category_name` match `rpt_product_performance_30d.product_category_name`.
+
 ### Inventory Queries: Always Filter by Latest Snapshot
 ```sql
 WITH latest_snapshot AS (

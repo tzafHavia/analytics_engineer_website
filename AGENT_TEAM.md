@@ -1,7 +1,7 @@
 # Agent Team — Analytics Engineer Website
 
 **Project Manager / Orchestrator:** Claude (main session)  
-**Last updated:** 2026-06-09
+**Last updated:** 2026-06-09 (category-aware trend + Line/Bar toggle)
 
 ---
 
@@ -45,6 +45,10 @@ I would:
 - Products & Categories Tab — full data + UI
 - Tab navigation shell (URL-based routing)
 - Global filters (date, category, item, stock, velocity)
+- **Category-aware Overview trend + Line/Bar toggle** (2026-06-09) — selecting a
+  category/item rescopes the KPIs, trend, delta and daily table via
+  `int_sales__daily_product` + `dim_product`
+- Design-system palette applied (blue/teal/purple per the spec PDF)
 - dbt Docs viewer (`/dbt-docs/index.html` with manifest + catalog)
 
 ### Pending ⬜ (in priority order)

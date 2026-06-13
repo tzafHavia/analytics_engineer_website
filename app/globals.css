@@ -1274,6 +1274,49 @@ code, pre {
   line-height: 1.7;
 }
 
+/* ── Trend chart: Line/Bar toggle + active-scope badge ────────────────── */
+.od-chart-toggle {
+  display: inline-flex;
+  gap: 0.15rem;
+  padding: 0.2rem;
+  background: var(--bg-base);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+.od-chart-toggle-btn {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.76rem;
+  font-weight: 600;
+  padding: 0.3rem 0.7rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.od-chart-toggle-btn:hover { color: var(--text-primary); }
+.od-chart-toggle-btn.is-active {
+  background: rgba(79,140,255,0.15);
+  color: var(--blue);
+}
+
+.od-trend-scope-badge {
+  display: inline-block;
+  margin-inline-start: 0.5rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(0,212,170,0.12);
+  border: 1px solid rgba(0,212,170,0.3);
+  color: var(--teal);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0;
+  vertical-align: middle;
+}
+
 .od-subtitle {
   max-width: 64ch;
   margin-bottom: 1.25rem;

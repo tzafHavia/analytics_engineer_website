@@ -1,10 +1,12 @@
 'use client';
 
+import { useState } from 'react';
 import {
+  Bar,
   CartesianGrid,
+  ComposedChart,
   Legend,
   Line,
-  LineChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -53,12 +55,16 @@ export default function OverviewTrendChart({
   description,
   data = [],
   dataKey,
-  lineColor = '#6366f1',
+  lineColor = '#4F8CFF',
   valueFormat = 'number',
   footerLink,
   secondaryLines = [],
   noDataMessage,
+  activeLabel,
 }) {
+  // Line vs. Bar toggle — local to each chart instance.
+  const [chartType, setChartType] = useState('line');
+
   if (!data.length) {
     return (
       <div className="od-panel od-panel-empty">
@@ -81,19 +87,35 @@ export default function OverviewTrendChart({
     <div className="od-panel">
       <div className="od-panel-head">
         <div>
-          <p className="od-panel-kicker">Trend</p>
+          <p className="od-panel-kicker">
+            Trend
+            {activeLabel ? <span className="od-trend-scope-badge">{activeLabel}</span> : null}
+          </p>
           <h3>{title}</h3>
         </div>
-        {footerLink ? (
-          <a href={footerLink.href} className="od-inline-link">
-            {footerLink.label}
-          </a>
-        ) : null}
+        <div className="od-chart-toggle" role="group" aria-label="Chart type">
+          <button
+            type="button"
+            className={`od-chart-toggle-btn${chartType === 'line' ? ' is-active' : ''}`}
+            onClick={() => setChartType('line')}
+            aria-pressed={chartType === 'line'}
+          >
+            Line
+          </button>
+          <button
+            type="button"
+            className={`od-chart-toggle-btn${chartType === 'bar' ? ' is-active' : ''}`}
+            onClick={() => setChartType('bar')}
+            aria-pressed={chartType === 'bar'}
+          >
+            Bar
+          </button>
+        </div>
       </div>
       <p className="od-panel-copy">{description}</p>
       <div className="od-chart-shell">
         <ResponsiveContainer width="100%" height={280}>
-          <LineChart data={data} margin={{ top: 10, right: 16, left: 4, bottom: 0 }}>
+          <ComposedChart data={data} margin={{ top: 10, right: 16, left: 4, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.16)" />
             <XAxis
               dataKey="date"
@@ -112,18 +134,32 @@ export default function OverviewTrendChart({
             />
             <Tooltip
               content={<DefaultTooltip format={valueFormat} />}
-              cursor={{ stroke: 'rgba(99,102,241,0.25)', strokeWidth: 1 }}
+              cursor={
+                chartType === 'bar'
+                  ? { fill: 'rgba(79,140,255,0.08)' }
+                  : { stroke: 'rgba(79,140,255,0.25)', strokeWidth: 1 }
+              }
             />
             <Legend wrapperStyle={{ fontSize: '12px' }} />
-            <Line
-              type="monotone"
-              dataKey={dataKey}
-              name={title}
-              stroke={lineColor}
-              strokeWidth={3}
-              dot={{ r: 2, strokeWidth: 0, fill: lineColor }}
-              activeDot={{ r: 5, fill: lineColor }}
-            />
+            {chartType === 'bar' ? (
+              <Bar
+                dataKey={dataKey}
+                name={title}
+                fill={lineColor}
+                radius={[4, 4, 0, 0]}
+                maxBarSize={28}
+              />
+            ) : (
+              <Line
+                type="monotone"
+                dataKey={dataKey}
+                name={title}
+                stroke={lineColor}
+                strokeWidth={3}
+                dot={{ r: 2, strokeWidth: 0, fill: lineColor }}
+                activeDot={{ r: 5, fill: lineColor }}
+              />
+            )}
             {secondaryLines.map((line) => (
               <Line
                 key={line.dataKey}
@@ -137,7 +173,7 @@ export default function OverviewTrendChart({
                 activeDot={{ r: 4, fill: line.color || '#94a3b8' }}
               />
             ))}
-          </LineChart>
+          </ComposedChart>
         </ResponsiveContainer>
       </div>
     </div>
