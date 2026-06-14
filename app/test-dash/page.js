@@ -1,5 +1,6 @@
 import TestDashKpiCard from '@/components/TestDashKpiCard';
 import TestDashControls from '@/components/TestDashControls';
+import TestDashHourlyChart from '@/components/TestDashHourlyChart';
 import { fetchTestDashData } from '@/lib/dashboardData';
 
 export const metadata = {
@@ -46,6 +47,8 @@ export default async function TestDashPage({ searchParams }) {
     date: dateParam,
   });
   const { kpis } = data;
+
+  const switchKey = `${range}-${data.year}-${data.month}-${data.weekOfMonth}-${data.dayOfWeek}-${data.dayMode}-${data.date}`;
 
   const cards = [
     { label: 'Total Sales',   value: kpis.totalSales,   format: 'currency',         icon: '₪', accent: 'gold' },
@@ -98,6 +101,13 @@ export default async function TestDashPage({ searchParams }) {
           0%   { opacity: 0; transform: translateX(6px) scale(0.98); }
           100% { opacity: 1; transform: none; }
         }
+        /* P4-4: one-time chart-panel entrance — fade + slight rise, in the
+           same motion language as the KPI cards (td-rise / td-reenter), but
+           a touch slower/softer so the big glass surface settles gracefully. */
+        @keyframes td-chart-in {
+          0%   { opacity: 0; transform: translateY(22px) scale(0.985); }
+          100% { opacity: 1; transform: none; }
+        }
       `}</style>
 
       <header className="td-header">
@@ -124,15 +134,15 @@ export default async function TestDashPage({ searchParams }) {
           <TestDashKpiCard
             key={card.label}
             index={i}
-            switchKey={`${range}-${data.year}-${data.month}-${data.weekOfMonth}-${data.dayOfWeek}-${data.dayMode}-${data.date}`}
+            switchKey={switchKey}
             {...card}
           />
         ))}
       </section>
 
-      {/* Phase 2 — charts go here */}
-      <section className="td-charts-placeholder">
-        <p>Charts coming next — KPI strip first.</p>
+      {/* Phase 4 — charts */}
+      <section className="td-charts">
+        <TestDashHourlyChart data={data.hourly} switchKey={switchKey} />
       </section>
     </div>
   );

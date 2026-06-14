@@ -13,7 +13,9 @@
       "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" \"http://localhost:3001/test-dash?range=day&year=2026&month=3&dow=2\" --max-time 30)",
       "Bash(curl -s -o /dev/null -w \"3000=%{http_code}\\\\n\" --max-time 30 \"http://localhost:3000/test-dash?range=day&year=2026&month=3&dow=2\")",
       "Bash(curl -s -o /dev/null -w \"3001=%{http_code}\\\\n\" --max-time 30 \"http://localhost:3001/test-dash?range=day&year=2026&month=3&dow=2\")",
-      "Bash(curl -s -o /dev/null -w \"3001=%{http_code}\\\\n\" --max-time 5 \"http://localhost:3001/\")"
+      "Bash(curl -s -o /dev/null -w \"3001=%{http_code}\\\\n\" --max-time 5 \"http://localhost:3001/\")",
+      "Bash(node --experimental-vm-modules -e ' *)",
+      "Bash(pkill -9 -f \"next\")"
     ]
   }
 }

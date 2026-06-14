@@ -3345,13 +3345,152 @@ select.contact-input { appearance: none; cursor: pointer; }
   .td-subfilter { animation: none; opacity: 1; transform: none; clip-path: none; }
   /* P36-4: weekday↔date swap is instant under reduced motion. */
   .td-dayfield { animation: none; opacity: 1; transform: none; }
+  /* P4-4: chart panel appears instantly (no entrance / hover lift). */
+  .td-chart-panel { animation: none; opacity: 1; transform: none; transition: none; }
+  .td-chart-panel:hover { transform: none; }
 }
 
-.td-charts-placeholder {
+/* P4-3: luxury studio-grade chart panel — sibling of the KPI cards.
+   Glass surface + masked metallic border ring + soft shadow, accented in a
+   sapphire→teal jewel tone that echoes the bar gradient. */
+.td-charts {
   margin-top: 2.5rem;
-  padding: 2.5rem;
-  border: 1px dashed var(--border);
+}
+
+.td-chart-panel {
+  /* sapphire→teal accent, mirroring the in-chart bar gradient */
+  --td-chart-grad: linear-gradient(135deg, #7db1ff 0%, #2f8bd6 52%, #00d4aa 100%);
+  --td-chart-line: rgba(79, 140, 255, 0.42);
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  padding: 1.6rem 1.5rem 1.5rem;
+  border: 1px solid var(--border);
   border-radius: var(--radius);
+  background: linear-gradient(155deg, var(--bg-card-hover), var(--bg-card));
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(12px) saturate(125%);
+  -webkit-backdrop-filter: blur(12px) saturate(125%);
+  transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1),
+              box-shadow 0.35s ease, border-color 0.35s ease;
+  /* P4-4: one-time entrance — fade + rise, settling after the KPI strip.
+     backwards keeps it hidden during the small lead-in delay. */
+  animation: td-chart-in 0.62s cubic-bezier(0.2, 0.7, 0.2, 1) 0.1s backwards;
+}
+.td-chart-panel:hover {
+  transform: translateY(-4px);
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.5), var(--shadow-glow);
+}
+[data-theme="light"] .td-chart-panel:hover {
+  border-color: rgba(15, 23, 42, 0.14);
+}
+
+/* metallic gradient border ring (masked so only the 1px edge shows) */
+.td-chart-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: var(--td-chart-grad);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  opacity: 0.55;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* faint accent glow bleeding up from the chart's baseline */
+.td-chart-panel::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 45%;
+  background: linear-gradient(to top, rgba(0, 212, 170, 0.06), transparent);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.td-chart-head {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding-left: 0.85rem;
+  margin-bottom: 1.1rem;
+}
+
+/* jewel accent bar standing in front of the header text */
+.td-chart-head::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.1rem;
+  bottom: 0.1rem;
+  width: 3px;
+  border-radius: 3px;
+  background: var(--td-chart-grad);
+  box-shadow: 0 0 12px rgba(79, 140, 255, 0.45);
+}
+
+.td-chart-kicker {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* small luminous jewel dot inside the kicker */
+.td-chart-kicker::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--teal);
+  box-shadow: 0 0 8px rgba(0, 212, 170, 0.7);
+}
+
+.td-chart-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+
+.td-chart-shell {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+}
+
+.td-chart-empty {
+  position: relative;
+  z-index: 2;
+  padding: 3rem 1.5rem;
   text-align: center;
   color: var(--text-muted);
+}
+
+.td-chart-empty span {
+  display: block;
+  font-size: 1.6rem;
+  margin-bottom: 0.5rem;
+  opacity: 0.6;
+}
+
+@media (max-width: 520px) {
+  .td-chart-panel {
+    padding: 1.25rem 1.1rem 1.1rem;
+  }
 }
