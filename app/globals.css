@@ -3155,6 +3155,173 @@ select.contact-input { appearance: none; cursor: pointer; }
   border-color: var(--td-ctrl-line);
 }
 
+/* P36-4: inner Weekday↔Date swap entrance. The active field (weekday <select>
+   or date <input>) is freshly mounted whenever ?daymode flips, so a mount-time
+   keyframe makes the swap crossfade/slide in instead of snapping. Keyframe
+   (td-dayfield-in) lives in the page <style> — Turbopack drops @keyframes from
+   globals.css. Shorter/subtler than td-subfilter-in so it reads as an inner
+   detail; if both fire on first day-mode entry it still lands clean. */
+.td-dayfield {
+  animation: td-dayfield-in 0.24s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+/* ── Day-mode controls (P36-3) ──────────────────────────────────────────────
+   The .td-daymode-group is itself a .td-subfilter (inherits divider + inset).
+   Inside it sit a compact Weekday|Date segmented toggle and the active field
+   (weekday <select> or native <input type=date>). The toggle is a smaller-scale
+   sibling of .td-seg so it reads as the same family. */
+.td-daymode-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.55rem;
+}
+
+/* Mini segmented switch — same inset-glass track language as .td-seg, scaled down. */
+.td-daymode-seg {
+  position: relative;
+  display: inline-flex;
+  padding: 3px;
+  gap: 3px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: linear-gradient(155deg, var(--bg-card-hover), var(--bg-card));
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35),
+              inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(10px) saturate(120%);
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
+}
+[data-theme="light"] .td-daymode-seg {
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.06),
+              inset 0 0 0 1px rgba(15, 23, 42, 0.02);
+}
+
+/* Sliding active highlight — mirrors .td-seg-thumb geometry.
+   Track padding 3px, gap 3px, --seg-count equal segments. */
+.td-daymode-thumb {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  z-index: 0;
+  pointer-events: none;
+  width: calc((100% - 6px - (var(--seg-count, 2) - 1) * 3px) / var(--seg-count, 2));
+  border-radius: calc(var(--radius-sm) - 3px);
+  background: var(--td-ctrl-grad);
+  box-shadow: 0 3px 10px rgba(47, 95, 208, 0.38),
+              inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transform: translateX(calc(var(--seg-index, 0) * (100% + 3px)));
+  transition: transform 0.32s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+/* Metallic top-edge ring on the thumb (matches .td-seg-thumb::before). */
+.td-daymode-thumb::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  pointer-events: none;
+}
+
+.td-daymode-btn {
+  position: relative;
+  z-index: 1;
+  appearance: none;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  padding: 0.34rem 0.8rem;
+  border-radius: calc(var(--radius-sm) - 3px);
+  transition: color 0.25s ease, background-color 0.25s ease;
+}
+.td-daymode-btn:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.04);
+}
+[data-theme="light"] .td-daymode-btn:hover {
+  background: rgba(15, 23, 42, 0.04);
+}
+.td-daymode-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--bg-base), 0 0 0 4px var(--td-ctrl-line);
+}
+.td-daymode-btn.is-active {
+  color: #fff;
+}
+.td-daymode-btn.is-active:hover {
+  color: #fff;
+  background: transparent;
+}
+[data-theme="light"] .td-daymode-btn.is-active:hover {
+  background: transparent;
+}
+
+/* Native date input — themed to match .td-select (glass field, focus halo).
+   Only the reliably-stylable surface props; the calendar indicator is lightly
+   themed below. */
+.td-date-input {
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  padding: 0.55rem 0.85rem;
+  border: 1px solid var(--td-ctrl-line);
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-card);
+  background-image: linear-gradient(155deg, var(--bg-card-hover), var(--bg-card));
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  min-width: 96px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(10px) saturate(120%);
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+[data-theme="light"] .td-date-input {
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.05);
+}
+.td-date-input:hover {
+  border-color: var(--td-ctrl-line);
+}
+.td-date-input:focus-visible {
+  outline: none;
+  border-color: var(--td-ctrl-line);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.25),
+              0 0 0 3px var(--td-ctrl-soft),
+              var(--shadow-glow);
+}
+[data-theme="light"] .td-date-input:focus-visible {
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.05),
+              0 0 0 3px var(--td-ctrl-soft),
+              var(--shadow-glow);
+}
+.td-date-input::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.65;
+  transition: opacity 0.2s ease;
+}
+.td-date-input:hover::-webkit-calendar-picker-indicator {
+  opacity: 1;
+}
+/* In dark theme the default (dark) glyph is invisible on the glass field —
+   invert it so it shows. Dark is the app default (no attribute on first paint),
+   so invert by default and let [data-theme="light"] restore the OS glyph. */
+.td-date-input::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}
+[data-theme="light"] .td-date-input::-webkit-calendar-picker-indicator {
+  filter: none;
+}
+
 /* On narrow screens the fields stack, so the sub-filter's vertical divider +
    extra inset would read as a stray line — drop them and let it sit flush. */
 @media (max-width: 520px) {
@@ -3167,12 +3334,17 @@ select.contact-input { appearance: none; cursor: pointer; }
 
 @media (prefers-reduced-motion: reduce) {
   .td-seg-btn,
+  .td-daymode-btn,
+  .td-date-input,
   .td-select,
   .td-select-wrap::after { transition: none; }
-  /* P3-4: thumb jumps instantly to the selected segment (no slide). */
-  .td-seg-thumb { transition: none; }
+  /* P3-4 / P36-3: thumbs jump instantly to the selected segment (no slide). */
+  .td-seg-thumb,
+  .td-daymode-thumb { transition: none; }
   /* P35-4: sub-selector appears instantly (no entrance reveal). */
   .td-subfilter { animation: none; opacity: 1; transform: none; clip-path: none; }
+  /* P36-4: weekday↔date swap is instant under reduced motion. */
+  .td-dayfield { animation: none; opacity: 1; transform: none; }
 }
 
 .td-charts-placeholder {

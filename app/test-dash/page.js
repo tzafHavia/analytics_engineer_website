@@ -32,12 +32,18 @@ export default async function TestDashPage({ searchParams }) {
   const parsedWeek = Number.parseInt(sp?.week, 10);
   const week = parsedWeek >= 1 ? parsedWeek : undefined;
 
+  const dayMode = sp?.daymode === 'date' || sp?.daymode === 'weekday' ? sp.daymode : undefined;
+
+  const dateParam = typeof sp?.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(sp.date) ? sp.date : undefined;
+
   const data = await fetchTestDashData({
     year,
     month,
     range,
     dayOfWeek: dow,
     weekOfMonth: week,
+    dayMode,
+    date: dateParam,
   });
   const { kpis } = data;
 
@@ -85,6 +91,13 @@ export default async function TestDashPage({ searchParams }) {
             clip-path: inset(0 0 0 0);
           }
         }
+        /* P36-4: inner Weekday↔Date swap. React mounts a fresh field on the
+           daymode change, so a mount-time entrance reads the swap as intentional.
+           Quick fade + slight slide-in, echoing td-subfilter-in's motion. */
+        @keyframes td-dayfield-in {
+          0%   { opacity: 0; transform: translateX(6px) scale(0.98); }
+          100% { opacity: 1; transform: none; }
+        }
       `}</style>
 
       <header className="td-header">
@@ -100,6 +113,10 @@ export default async function TestDashPage({ searchParams }) {
         weekOfMonth={data.weekOfMonth}
         dayOfWeek={data.dayOfWeek}
         weeksInMonth={data.weeksInMonth}
+        dayMode={data.dayMode}
+        date={data.date}
+        monthStart={data.monthStart}
+        refDate={data.refDate}
       />
 
       <section className="td-kpi-grid">
@@ -107,7 +124,7 @@ export default async function TestDashPage({ searchParams }) {
           <TestDashKpiCard
             key={card.label}
             index={i}
-            switchKey={`${range}-${data.year}-${data.month}-${data.weekOfMonth}-${data.dayOfWeek}`}
+            switchKey={`${range}-${data.year}-${data.month}-${data.weekOfMonth}-${data.dayOfWeek}-${data.dayMode}-${data.date}`}
             {...card}
           />
         ))}

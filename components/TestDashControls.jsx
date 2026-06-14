@@ -18,6 +18,11 @@ const WEEKDAYS = [
   'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday',
 ];
 
+const DAY_MODES = [
+  { value: 'weekday', label: 'Weekday' },
+  { value: 'date', label: 'Date' },
+];
+
 export default function TestDashControls({
   range,
   year,
@@ -25,6 +30,10 @@ export default function TestDashControls({
   weekOfMonth,
   dayOfWeek,
   weeksInMonth,
+  dayMode,
+  date,
+  monthStart,
+  refDate,
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -48,10 +57,20 @@ export default function TestDashControls({
   // value never leaks across modes (backend defaults handle absence).
   function changeRange(nextRange) {
     const removeKeys = [];
-    if (nextRange !== 'day') removeKeys.push('dow');
+    if (nextRange !== 'day') removeKeys.push('dow', 'daymode', 'date');
     if (nextRange !== 'week') removeKeys.push('week');
     pushParams({ range: nextRange }, removeKeys);
   }
+
+  // Switching day-mode drops the other mode's sub-filter so a stale value never
+  // leaks (backend defaults handle absence).
+  function changeDayMode(nextMode) {
+    const removeKeys = nextMode === 'date' ? ['dow'] : ['date'];
+    pushParams({ daymode: nextMode }, removeKeys);
+  }
+
+  const activeDayMode = dayMode === 'date' ? 'date' : 'weekday';
+  const dayModeIndex = Math.max(0, DAY_MODES.findIndex((item) => item.value === activeDayMode));
 
   const weekCount = Number.isInteger(weeksInMonth) && weeksInMonth > 0 ? weeksInMonth : 5;
   const weekOptions = Array.from({ length: weekCount }, (_, i) => i + 1);
@@ -91,7 +110,7 @@ export default function TestDashControls({
             <select
               className="td-select"
               value={month}
-              onChange={(event) => pushParams({ month: event.target.value })}
+              onChange={(event) => pushParams({ month: event.target.value, year })}
             >
               {MONTHS.map((label, index) => (
                 <option key={label} value={index + 1}>
@@ -108,7 +127,7 @@ export default function TestDashControls({
             <select
               className="td-select"
               value={year}
-              onChange={(event) => pushParams({ year: event.target.value })}
+              onChange={(event) => pushParams({ year: event.target.value, month })}
             >
               {years.map((value) => (
                 <option key={value} value={value}>
@@ -120,22 +139,60 @@ export default function TestDashControls({
         </label>
 
         {range === 'day' && (
-          <label className="td-control-field td-subfilter">
-            <span>Day of week</span>
-            <div className="td-select-wrap">
-              <select
-                className="td-select"
-                value={dayOfWeek}
-                onChange={(event) => pushParams({ dow: event.target.value })}
-              >
-                {WEEKDAYS.map((label, index) => (
-                  <option key={label} value={index}>
-                    {label}
-                  </option>
-                ))}
-              </select>
+          <div className="td-subfilter td-daymode-group">
+            <div
+              className="td-daymode-seg"
+              role="group"
+              aria-label="Day mode"
+              style={{ '--seg-index': dayModeIndex, '--seg-count': DAY_MODES.length }}
+            >
+              <span className="td-daymode-thumb" aria-hidden />
+              {DAY_MODES.map((item) => (
+                <button
+                  key={item.value}
+                  type="button"
+                  className={`td-daymode-btn${activeDayMode === item.value ? ' is-active' : ''}`}
+                  aria-pressed={activeDayMode === item.value}
+                  onClick={() => changeDayMode(item.value)}
+                >
+                  {item.label}
+                </button>
+              ))}
             </div>
-          </label>
+
+            {activeDayMode === 'weekday' ? (
+              <label className="td-control-field td-dayfield">
+                <span>Day of week</span>
+                <div className="td-select-wrap">
+                  <select
+                    className="td-select"
+                    value={dayOfWeek}
+                    onChange={(event) => pushParams({ dow: event.target.value })}
+                  >
+                    {WEEKDAYS.map((label, index) => (
+                      <option key={label} value={index}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </label>
+            ) : (
+              <label className="td-control-field td-dayfield">
+                <span>Date</span>
+                <input
+                  type="date"
+                  className="td-date-input"
+                  value={date || ''}
+                  min={monthStart || undefined}
+                  max={refDate || undefined}
+                  onChange={(event) => {
+                    if (event.target.value) pushParams({ date: event.target.value });
+                  }}
+                />
+              </label>
+            )}
+          </div>
         )}
 
         {range === 'week' && (
