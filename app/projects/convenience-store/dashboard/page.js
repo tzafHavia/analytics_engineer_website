@@ -231,7 +231,7 @@ export default async function ConvenienceStoreDashboardPage({ searchParams }) {
         kpis: {
           totalSales: 0, salesDeltaPct: null, totalTickets: 0,
           avgTicketAmount: 0, totalUnitsSold: 0,
-          outOfStockCount: 0, stockoutRiskCount: 0, avgDaysOfCover: null,
+          outOfStockCount: 0, stockoutRiskCount: 0, deadStockCount: 0, avgDaysOfCover: null,
         },
         dailySalesTrend: [],
         ticketTrend: [],
@@ -333,6 +333,12 @@ export default async function ConvenienceStoreDashboardPage({ searchParams }) {
       value: formatNumber(overview.kpis.stockoutRiskCount),
       sub: 'Latest inventory snapshot',
       color: 'orange',
+    },
+    {
+      label: 'Dead stock items',
+      value: formatNumber(overview.kpis.deadStockCount),
+      sub: 'No sales in 90d — latest snapshot',
+      color: 'purple',
     },
     {
       label: 'Avg days of cover',
