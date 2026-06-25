@@ -52,8 +52,9 @@ Direct `pg` is required because PostgREST (Supabase's REST API) only exposes the
 
 - **All `velocity_band` / `stock_status` enum values are UPPERCASE**: `FAST`, `STEADY`, `SLOW`, `NO_RECENT_SALES`, `OUT_OF_STOCK`, `STOCKOUT_RISK`, `OVERSTOCK`, `DEAD_STOCK`. Compare with UPPERCASE literals in SQL; the JS layer often lowercases for display. Assuming lowercase has caused real bugs (empty inventory KPIs).
 - Sales queries anchor to `MAX(sale_date)` then default to a trailing 30-day window. Inventory queries filter to `MAX(snapshot_date)` (snapshot-based, not date-filtered). 30-day product/category tables (`rpt_*_30d`) ignore the date filter entirely.
+- **Inventory time-series exception:** `rpt_inventory_health_trend` (added 2026-06-25) is the one inventory table with a real per-business-day series (`snapshot_date` is a `timestamp` — normalize with `toIsoDate`). Powers the Inventory-tab "health over time" charts (`InventoryHealthTrendChart`, `InventoryStatusCompositionChart`) via `healthTrend[]`/`healthTrendSummary` in `fetchInventoryDashboardData`. Note: `out_of_stock_count` + `total_inventory_units` are flat by design — lead with `stockout_risk_count` + `avg_days_of_cover_30d`; rising `at_risk` is *bad* (inverted WoW chip).
 - **No `rpt_` table has date × category granularity.** For a category/item-scoped daily series, join the daily-product fact to the product dim: `int_sales__daily_product` (`sale_date, item_id, net_sales_amount, sold_qty, tickets_count`) `JOIN dim_product` (`item_id → category_name`, item_id is unique). See the `isScoped` branch in `fetchOverviewDashboardData`.
-- `rpt_workforce_productivity_summary` does **not** exist — use `rpt_employee_productivity` + `int_workforce__daily_*` instead.
+- `rpt_workforce_productivity_summary` **now exists** (added 2026-06-25): one ranked row per employee (hours, overtime tiers, payroll, attributed sales, efficiency, recent-form 7d, three diverging ranks). `employee_name` is **Hebrew (RTL)** — render with `dir="rtl"`. Pair with the per-day `rpt_employee_productivity` (`shift_date, employee_id, hours_worked, sales_amount, sales_per_hour`) for the trend detail. Attributed sales are estimated by worked-hour share (disclaimer required on the tab).
 
 ### Dashboard tab system
 
@@ -63,7 +64,7 @@ Component split:
 - `*TabContent.jsx` — **server** components (no `'use client'`): KPI cards → charts → tables layout.
 - `*Chart.jsx` — **client** components; every Recharts chart needs `'use client'`. Reuse before adding: `OverviewTrendChart` (Line/Bar toggle via `ComposedChart`), `OverviewTopProductsChart`, `PaymentMixDonut`, `InventoryStatusDonut`, etc.
 
-Workforce is the one unbuilt tab (`WorkforceTabContent` + employee charts + `fetchWorkforceDashboardData`).
+All five tabs are now built. Workforce (`WorkforceTabContent` + `EmployeeOvertimeChart` + `EmployeeTrendChart` + `fetchWorkforceDashboardData`, `wf-` CSS prefix) was the last, completed 2026-06-25.
 
 ### Styling & design system
 

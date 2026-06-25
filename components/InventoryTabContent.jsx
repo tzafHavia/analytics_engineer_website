@@ -2,6 +2,8 @@ import InventoryStatusDonut from '@/components/InventoryStatusDonut';
 import DaysOfCoverHistogram from '@/components/DaysOfCoverHistogram';
 import InventoryScatterChart from '@/components/InventoryScatterChart';
 import InventoryActionTable from '@/components/InventoryActionTable';
+import InventoryHealthTrendChart from '@/components/InventoryHealthTrendChart';
+import InventoryStatusCompositionChart from '@/components/InventoryStatusCompositionChart';
 
 function formatDoc(days) {
   if (days == null) return '—';
@@ -25,6 +27,7 @@ export default function InventoryTabContent({ data }) {
     snapshotDate, kpis,
     inventoryDistribution, coverHistogram,
     scatterData, reorderItems, overstockItems, deadStockItems,
+    healthTrend, healthTrendSummary,
   } = data;
 
   const snapshotLabel = snapshotDate ? `Snapshot: ${snapshotDate}` : 'Latest snapshot';
@@ -62,6 +65,15 @@ export default function InventoryTabContent({ data }) {
             />
           ))}
         </div>
+      </section>
+
+      {/* ── Health trend + status composition over time ────────────────────── */}
+      <section className="od-two-col-grid od-section-spacing">
+        <InventoryHealthTrendChart
+          data={healthTrend}
+          wowDelta={healthTrendSummary?.atRiskWowDelta ?? null}
+        />
+        <InventoryStatusCompositionChart data={healthTrend} />
       </section>
 
       {/* ── Status donut + coverage histogram ──────────────────────────────── */}

@@ -8,8 +8,9 @@ import OverviewTrendChart from '@/components/OverviewTrendChart';
 import DashboardTabNav from '@/components/DashboardTabNav';
 import InventoryTabContent from '@/components/InventoryTabContent';
 import SalesTabContent from '@/components/SalesTabContent';
+import WorkforceTabContent from '@/components/WorkforceTabContent';
 import ProductsTabContent from '@/components/ProductsTabContent';
-import { fetchOverviewDashboardData, fetchOverviewFilterOptions, fetchInventoryDashboardData, fetchSalesDashboardData, fetchProductsDashboardData } from '@/lib/dashboardData';
+import { fetchOverviewDashboardData, fetchOverviewFilterOptions, fetchInventoryDashboardData, fetchSalesDashboardData, fetchProductsDashboardData, fetchWorkforceDashboardData } from '@/lib/dashboardData';
 
 // ─── Format helpers ───────────────────────────────────────────────────────────
 
@@ -213,6 +214,7 @@ export default async function ConvenienceStoreDashboardPage({ searchParams }) {
   let inventoryData = null;
   let salesData = null;
   let productsData = null;
+  let workforceData = null;
   let filterOptions = { productCategories: [], itemNames: [], stockStatuses: [], velocityBands: [] };
 
   if (isOverview) {
@@ -264,6 +266,13 @@ export default async function ConvenienceStoreDashboardPage({ searchParams }) {
     try {
       [inventoryData, filterOptions] = await Promise.all([
         fetchInventoryDashboardData(),
+        fetchOverviewFilterOptions(),
+      ]);
+    } catch (_) {}
+  } else if (tab === 'workforce') {
+    try {
+      [workforceData, filterOptions] = await Promise.all([
+        fetchWorkforceDashboardData(filters),
         fetchOverviewFilterOptions(),
       ]);
     } catch (_) {}
@@ -532,7 +541,7 @@ export default async function ConvenienceStoreDashboardPage({ searchParams }) {
       {tab === 'sales'     && <SalesTabContent data={salesData} />}
       {tab === 'inventory' && <InventoryTabContent data={inventoryData} />}
       {tab === 'products'  && <ProductsTabContent data={productsData} />}
-      {tab === 'workforce' && <DashTabPlaceholder tabKey="workforce" />}
+      {tab === 'workforce' && <WorkforceTabContent data={workforceData} />}
     </div>
   );
 }
