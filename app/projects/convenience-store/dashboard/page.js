@@ -258,14 +258,14 @@ export default async function ConvenienceStoreDashboardPage({ searchParams }) {
   } else if (tab === 'products') {
     try {
       [productsData, filterOptions] = await Promise.all([
-        fetchProductsDashboardData(),
+        fetchProductsDashboardData(filters),
         fetchOverviewFilterOptions(),
       ]);
     } catch (_) {}
   } else if (tab === 'inventory') {
     try {
       [inventoryData, filterOptions] = await Promise.all([
-        fetchInventoryDashboardData(),
+        fetchInventoryDashboardData(filters),
         fetchOverviewFilterOptions(),
       ]);
     } catch (_) {}

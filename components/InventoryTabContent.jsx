@@ -27,10 +27,11 @@ export default function InventoryTabContent({ data }) {
     snapshotDate, kpis,
     inventoryDistribution, coverHistogram,
     scatterData, reorderItems, overstockItems, deadStockItems,
-    healthTrend, healthTrendSummary,
+    healthTrend, healthTrendSummary, trendPeriod,
   } = data;
 
   const snapshotLabel = snapshotDate ? `Snapshot: ${snapshotDate}` : 'Latest snapshot';
+  const trendScoped = trendPeriod?.scoped;
 
   const kpiCards = [
     { label: 'Total SKUs tracked',  value: kpis.totalItems.toLocaleString('he-IL'), sub: snapshotLabel,                          color: 'cyan'   },
@@ -51,7 +52,10 @@ export default function InventoryTabContent({ data }) {
             <h2 className="cs-section-title">Inventory health snapshot</h2>
           </div>
           {snapshotDate && (
-            <span className="od-faint-note">{snapshotLabel}</span>
+            <span className="od-faint-note">
+              {snapshotLabel}
+              {trendScoped ? ' · latest snapshot, not affected by the date filter' : ''}
+            </span>
           )}
         </div>
         <div className="dash-kpi-dark-grid">
@@ -68,12 +72,23 @@ export default function InventoryTabContent({ data }) {
       </section>
 
       {/* ── Health trend + status composition over time ────────────────────── */}
-      <section className="od-two-col-grid od-section-spacing">
-        <InventoryHealthTrendChart
+      <section className="od-section-spacing">
+        <div className="od-section-head" style={{ marginBottom: '1rem' }}>
+          <div>
+            <p className="od-section-kicker">Trend over time</p>
+            <h2 className="cs-section-title">Inventory health trend</h2>
+          </div>
+          {trendPeriod?.label && (
+            <span className="od-faint-note">{trendPeriod.label}</span>
+          )}
+        </div>
+        <div className="od-two-col-grid">
+          <InventoryHealthTrendChart
           data={healthTrend}
           wowDelta={healthTrendSummary?.atRiskWowDelta ?? null}
         />
-        <InventoryStatusCompositionChart data={healthTrend} />
+          <InventoryStatusCompositionChart data={healthTrend} />
+        </div>
       </section>
 
       {/* ── Status donut + coverage histogram ──────────────────────────────── */}

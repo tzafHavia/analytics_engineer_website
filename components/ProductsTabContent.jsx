@@ -34,13 +34,18 @@ function VelocityBadge({ band }) {
 export default function ProductsTabContent({ data }) {
   if (!data) return null;
 
-  const { kpis, topProducts, slowMovers, categoryData, scatterData } = data;
+  const { kpis, topProducts, slowMovers, categoryData, scatterData, period } = data;
+
+  const scoped = period?.scoped;
+  const periodLabel = period?.label || 'Rolling 30-day window';
 
   const topProductMetric = {
     key: 'salesAmount30d',
-    label: 'Revenue (30d)',
+    label: scoped ? 'Revenue' : 'Revenue (30d)',
     heading: 'Top 10 products by revenue',
-    description: 'Rolling 30-day window — not affected by the date filter.',
+    description: scoped
+      ? `Top sellers for ${periodLabel}.`
+      : 'Rolling 30-day window — not affected by the date filter.',
     valueFormat: 'currency-compact',
   };
 
@@ -88,7 +93,7 @@ export default function ProductsTabContent({ data }) {
             <p className="od-section-kicker">Products & Categories</p>
             <h2 className="cs-section-title">Product & category performance</h2>
           </div>
-          <span className="od-faint-note">Rolling 30-day window</span>
+          <span className="od-faint-note">{periodLabel}</span>
         </div>
         <div className="dash-kpi-dark-grid">
           {kpiCards.map(card => (
@@ -108,6 +113,14 @@ export default function ProductsTabContent({ data }) {
 
       {/* ── Sales vs GP scatter ─────────────────────────────────────────────── */}
       <section className="od-section-spacing">
+        {scoped && (
+          <div className="od-section-head" style={{ marginBottom: '0.75rem' }}>
+            <div>
+              <p className="od-section-kicker">Profitability</p>
+            </div>
+            <span className="od-faint-note">30-day rolling — not affected by the date filter</span>
+          </div>
+        )}
         <ProductScatterChart data={scatterData} />
       </section>
 
@@ -119,6 +132,7 @@ export default function ProductsTabContent({ data }) {
               <p className="od-panel-kicker">Slow movers · {slowMovers.length} items</p>
               <h3>Dead & slow-moving products</h3>
             </div>
+            {scoped && <span className="od-faint-note">30-day rolling</span>}
           </div>
           <p className="od-panel-copy">
             Lowest 30-day velocity. Consider markdown, bundling, or removal.
@@ -165,7 +179,9 @@ export default function ProductsTabContent({ data }) {
               <h3>Category ranking</h3>
             </div>
           </div>
-          <p className="od-panel-copy">All categories ranked by 30-day revenue.</p>
+          <p className="od-panel-copy">
+            {scoped ? `All categories ranked by revenue · ${periodLabel}.` : 'All categories ranked by 30-day revenue.'}
+          </p>
           <div className="table-wrapper" style={{ marginTop: '1rem' }}>
             <table className="data-table">
               <thead>
