@@ -1,0 +1,32 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node --env-file=.env.local -e ' *)",
+      "Read(//home/tzaf/projects/**)",
+      "Read(//home/tzaf/**)",
+      "Bash(git mv *)",
+      "Bash(grep -n \"DISTINCT ON\\\\|FROM \\\\${qualifiedPaymentsTable}\\\\|document_id\" lib/pgClient.js)",
+      "Bash(node -e \"const c = require\\('next/cache'\\); console.log\\('unstable_cache:', typeof c.unstable_cache, '| revalidateTag:', typeof c.revalidateTag\\);\")",
+      "Bash(npm run *)",
+      "Bash(node -e ' *)",
+      "Bash(curl -s -o /dev/null -w \"\" http://localhost:3000/)",
+      "Bash(break)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code} %{time_total}s\\\\n\" \"http://localhost:3000/projects/convenience-store/dashboard\")",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code} %{time_total}s\\\\n\" \"http://localhost:3000/projects/convenience-store/dashboard?productCategory=%D7%90%D7%9C%D7%9B%D7%95%D7%94%D7%95%D7%9C\")",
+      "Bash(curl -s \"http://localhost:3000/projects/convenience-store/dashboard?productCategory=%D7%90%D7%9C%D7%9B%D7%95%D7%94%D7%95%D7%9C\")",
+      "Bash(pkill -f \"next dev\")",
+      "Bash(pkill -f \"next-server\")",
+      "Read(//mnt/f/.DATA-Analyst-Coures/.shlomy_store/full_project/store_pipeline/**)",
+      "Read(//mnt/f/.DATA-Analyst-Coures/.shlomy_store/full_project/**)",
+      "Bash(grep -iE \"claude|agent|\\\\.md$|\\\\.cursor\")",
+      "Bash(git check-ignore *)",
+      "Bash(node -e \"const c=require\\('next/cache.js'\\); console.log\\('revalidateTag:', typeof c.revalidateTag\\)\")",
+      "Read(//tmp/**)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" \"http://127.0.0.1:3001/test-dash?range=day&year=2026&month=3\")",
+      "Bash(curl -s -o /dev/null -w \"day:%{http_code}\\\\n\" \"http://127.0.0.1:3000/test-dash?range=day&year=2026&month=3\")",
+      "Bash(curl -s -o /dev/null -w \"month:%{http_code}\\\\n\" \"http://127.0.0.1:3000/test-dash?range=month&year=2026&month=3\")",
+      "Bash(awk '{print $2, $11, $12, $13}')",
+      "Bash(curl -s -o /dev/null -w \"port 3000: HTTP %{http_code}\\\\n\" --max-time 2 http://localhost:3000/)"
+    ]
+  }
+}

@@ -46,7 +46,7 @@ A Next.js 16 App Router data-analytics **portfolio** site (React 19, Turbopack).
 | `lib/pgClient.js` | separate pg `Pool` | `/payments` page + payment/KPI queries |
 | `lib/supabaseClient.js` | `@supabase/supabase-js` | `public` schema + auth only |
 
-Direct `pg` is required because PostgREST (Supabase's REST API) only exposes the `public` schema, while **all analytics tables live in the `store_pipeline` schema**. The two pg files each own a private pool — they do not share one. Connection string is `NEXT_DATABASE_URL` (currently a Supabase Transaction-mode pooler: `max: 10`, `idleTimeoutMillis`, `connectionTimeoutMillis`).
+Direct `pg` is required because PostgREST (Supabase's REST API) only exposes the `public` schema, while **all analytics tables live in the `store_pipeline` schema**. The two pg files each own a private module-level pool singleton — they do not share one, and must never create a pool per request. Connection string is `NEXT_DATABASE_URL` (a Supabase Transaction-mode pooler, `:6543`). Both pools share one config: `max` from the `DB_POOL_MAX` env var (clamped ≥1, **default 3** — tuned for Vercel serverless, where total connections ≈ instances × max; `max=1` is a verified-working max-safety option that serializes the per-tab parallel queries), `idleTimeoutMillis: 10000`, `connectionTimeoutMillis: 10000` (finite — fail fast, never hang), `ssl: { rejectUnauthorized: false }`.
 
 ### Database conventions (`store_pipeline`)
 
