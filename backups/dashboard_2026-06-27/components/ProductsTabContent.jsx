@@ -65,9 +65,9 @@ export default function ProductsTabContent({ data }) {
       color: 'purple',
     },
     {
-      label: 'Slow & dead movers',
-      value: Number(kpis.slowAndDeadCount).toLocaleString('he-IL'),
-      sub: 'Slow + no-sales + OOS · 30d',
+      label: 'Dead stock SKUs',
+      value: Number(kpis.deadStockCount).toLocaleString('he-IL'),
+      sub: 'Near-zero velocity over 30 days',
       color: 'orange',
     },
     {

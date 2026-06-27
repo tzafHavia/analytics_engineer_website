@@ -22,7 +22,7 @@ function formatValue(value, type) {
   if (type === 'currency') {
     return `₪${Number(value).toLocaleString('he-IL', { maximumFractionDigits: 0 })}`;
   }
-  return Number(value).toLocaleString('he-IL', { maximumFractionDigits: 0 });
+  return Number(value).toLocaleString('he-IL');
 }
 
 function compareValues(left, right, type) {

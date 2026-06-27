@@ -38,7 +38,7 @@ export default function InventoryTabContent({ data }) {
     { label: 'Out of stock',         value: kpis.outOfStockCount.toLocaleString('he-IL'), sub: 'Needs immediate reorder',         color: 'red'    },
     { label: 'Stockout risk',        value: kpis.stockoutRiskCount.toLocaleString('he-IL'), sub: 'Low stock — act soon',          color: 'orange' },
     { label: 'Overstocked',          value: kpis.overstockCount.toLocaleString('he-IL'), sub: 'Excess vs. 30d pace',             color: 'green'  },
-    { label: 'Dead stock',           value: kpis.deadStockCount.toLocaleString('he-IL'), sub: 'Dead stock (latest snapshot)',    color: 'purple' },
+    { label: 'Dead stock',           value: kpis.deadStockCount.toLocaleString('he-IL'), sub: 'Near-zero velocity (30d)',        color: 'purple' },
     { label: 'Avg days of cover',    value: formatDoc(kpis.avgDaysOfCover),                sub: 'Avg across all tracked SKUs',   color: 'cyan'   },
   ];
 

@@ -65,7 +65,7 @@ export default function SalesTabContent({ data }) {
     },
     {
       label: 'Units sold',
-      value: Number(kpis.totalUnitsSold).toLocaleString('he-IL', { maximumFractionDigits: 0 }),
+      value: Number(kpis.totalUnitsSold).toLocaleString('he-IL'),
       sub: periodLabel,
       color: 'purple',
     },

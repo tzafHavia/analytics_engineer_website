@@ -521,10 +521,11 @@ async function fetchInventoryDashboardData_core(filters = {}) {
   const trendScoped = !!(dateFrom || dateTo);
 
   try {
-    const [riskRows, histRows, scatterRows, actionRows, deadRows, healthTrendRows, execDocRows] = await Promise.all([
-      // KPI aggregation: count by status (× velocity kept for distribution parity)
+    const [riskRows, histRows, scatterRows, actionRows, deadRows, healthTrendRows] = await Promise.all([
+      // KPI aggregation: count by status × velocity + weighted avg doc
       query(
-        `SELECT snapshot_date::text, stock_status, velocity_band, COUNT(*) AS cnt
+        `SELECT snapshot_date::text, stock_status, velocity_band,
+                COUNT(*) AS cnt, AVG(days_of_cover_30d) AS avg_doc
          FROM store_pipeline.rpt_inventory_risk
          WHERE snapshot_date = (SELECT MAX(snapshot_date) FROM store_pipeline.rpt_inventory_risk)
          GROUP BY snapshot_date, stock_status, velocity_band`
@@ -563,11 +564,6 @@ async function fetchInventoryDashboardData_core(filters = {}) {
          JOIN store_pipeline.dim_product dp USING (item_id)
          WHERE pv.snapshot_date = (SELECT MAX(snapshot_date) FROM store_pipeline.rpt_product_velocity)
            AND pv.current_inventory_qty IS NOT NULL
-           -- ITEM 4: exclude junk/placeholder products
-           AND dp.item_name IS NOT NULL
-           AND btrim(dp.item_name) <> ''
-           AND dp.item_id <> '/'
-           AND lower(btrim(dp.item_name)) <> 'unknown item'
          ORDER BY pv.sold_qty_30d DESC NULLS LAST
          LIMIT 200`
       ),
@@ -583,11 +579,6 @@ async function fetchInventoryDashboardData_core(filters = {}) {
            ON r.item_id = ia.item_id
            AND r.snapshot_date = ia.snapshot_date
          WHERE ia.snapshot_date = (SELECT MAX(snapshot_date) FROM store_pipeline.rpt_inventory_actions)
-           -- ITEM 4: exclude junk/placeholder products (e.g. item_id '/', "Unknown Item")
-           AND dp.item_name IS NOT NULL
-           AND btrim(dp.item_name) <> ''
-           AND dp.item_id <> '/'
-           AND lower(btrim(dp.item_name)) <> 'unknown item'
          ORDER BY ia.action_priority ASC NULLS LAST, ia.item_id`
       ),
 
@@ -599,11 +590,6 @@ async function fetchInventoryDashboardData_core(filters = {}) {
          JOIN store_pipeline.dim_product dp USING (item_id)
          WHERE r.snapshot_date = (SELECT MAX(snapshot_date) FROM store_pipeline.rpt_inventory_risk)
            AND r.velocity_band = 'NO_RECENT_SALES'
-           -- ITEM 4: exclude junk/placeholder products (e.g. item_id '/', "Unknown Item")
-           AND dp.item_name IS NOT NULL
-           AND btrim(dp.item_name) <> ''
-           AND dp.item_id <> '/'
-           AND lower(btrim(dp.item_name)) <> 'unknown item'
          ORDER BY r.current_inventory_qty DESC NULLS LAST
          LIMIT 50`
       ),
@@ -621,24 +607,18 @@ async function fetchInventoryDashboardData_core(filters = {}) {
          ORDER BY snapshot_date ASC`,
         [dateFrom, dateTo]
       ),
-
-      // Canonical avg days of cover — the same pipeline mart value Overview reads
-      // (single source of truth; see ITEM 2b).
-      query(
-        `SELECT avg_days_of_cover_30d
-         FROM store_pipeline.rpt_executive_summary_daily
-         ORDER BY sale_date DESC
-         LIMIT 1`
-      ),
     ]);
 
     // ── KPIs ──────────────────────────────────────────────────────────────────
     let totalItems = 0, outOfStockCount = 0, stockoutRiskCount = 0, overstockCount = 0, deadStockCount = 0;
+    let totalWeightedDoc = 0, totalDocCount = 0;
     const statusMap = {};
 
     for (const row of riskRows) {
       const cnt = toNumber(row.cnt);
+      const avgDoc = row.avg_doc != null ? toNumber(row.avg_doc) : null;
       const status = String(row.stock_status || '').toLowerCase();
+      const velocity = String(row.velocity_band || '').toLowerCase();
 
       totalItems += cnt;
       statusMap[status] = (statusMap[status] || 0) + cnt;
@@ -646,19 +626,11 @@ async function fetchInventoryDashboardData_core(filters = {}) {
       if (status === 'out_of_stock') outOfStockCount += cnt;
       if (status === 'stockout_risk') stockoutRiskCount += cnt;
       if (status === 'overstock') overstockCount += cnt;
-      // ITEM 2a (unified): "Dead stock" = stock_status='DEAD_STOCK' — same definition
-      // as Overview's invCountMap['DEAD_STOCK']. (Previously counted velocity_band
-      // 'NO_RECENT_SALES', a different metric.)
-      if (status === 'dead_stock') deadStockCount += cnt;
+      if (velocity === 'no_recent_sales') deadStockCount += cnt;
+      if (avgDoc != null) { totalWeightedDoc += avgDoc * cnt; totalDocCount += cnt; }
     }
 
-    // ITEM 2b (unified): "Avg days of cover" uses the canonical pipeline mart value
-    // rpt_executive_summary_daily.avg_days_of_cover_30d — the SAME source Overview
-    // reads — instead of the ad-hoc weighted-avg-excluding-nulls recompute (which
-    // gave a different number, e.g. 183 vs the mart's 133).
-    const avgDaysOfCover = execDocRows[0]?.avg_days_of_cover_30d != null
-      ? toNumber(execDocRows[0].avg_days_of_cover_30d)
-      : null;
+    const avgDaysOfCover = totalDocCount > 0 ? totalWeightedDoc / totalDocCount : null;
     const snapshotDate = riskRows[0]?.snapshot_date ? toIsoDate(riskRows[0].snapshot_date) : null;
 
     // ── Inventory distribution for donut chart ────────────────────────────────
@@ -929,7 +901,7 @@ async function fetchSalesDashboardData_core(rawFilters = {}) {
 // ─── Products & Categories tab fetch ─────────────────────────────────────────
 async function fetchProductsDashboardData_core(filters = {}) {
   const EMPTY = {
-    kpis: { topProductByRevenue: null, topProductByUnits: null, slowAndDeadCount: 0, topCategoryByRevenue: null, topCategoryByProfit: null },
+    kpis: { topProductByRevenue: null, topProductByUnits: null, deadStockCount: 0, topCategoryByRevenue: null, topCategoryByProfit: null },
     topProducts: [],
     slowMovers: [],
     categoryData: [],
@@ -989,11 +961,9 @@ async function fetchProductsDashboardData_core(filters = {}) {
          LIMIT 100`
       ),
 
-      // Aggregate: slow & dead movers count (ITEM 2 — this is a DIFFERENT metric
-      // from "dead stock" — it's slow + no-recent-sales + out-of-stock movers.
-      // Renamed from deadStockCount → slowAndDeadCount; UI relabels "Slow & dead movers".)
+      // Aggregate: dead stock count
       query(
-        `SELECT COUNT(*) FILTER (WHERE velocity_band IN ('NO_RECENT_SALES','SLOW','OUT_OF_STOCK')) AS slow_and_dead_count
+        `SELECT COUNT(*) FILTER (WHERE velocity_band IN ('NO_RECENT_SALES','SLOW','OUT_OF_STOCK')) AS dead_stock_count
          FROM store_pipeline.rpt_product_performance_30d`
       ),
     ]);
@@ -1002,7 +972,7 @@ async function fetchProductsDashboardData_core(filters = {}) {
     let topByRevenue = topProdRows[0] || null;
     let topByUnits = [...topProdRows]
       .sort((a, b) => toNumber(b.units_sold_30d) - toNumber(a.units_sold_30d))[0] || null;
-    const slowAndDeadCount = toNumber(aggRows[0]?.slow_and_dead_count);
+    const deadStockCount = toNumber(aggRows[0]?.dead_stock_count);
     let topCatByRevenue = categoryRows[0] || null;
     const topCatByProfit = [...categoryRows]
       .sort((a, b) => toNumber(b.estimated_gross_profit_30d) - toNumber(a.estimated_gross_profit_30d))[0] || null;
@@ -1156,7 +1126,7 @@ async function fetchProductsDashboardData_core(filters = {}) {
           unitsSold: toNumber(topByUnits.units_sold_30d),
           categoryName: topByUnits.product_category_name || '—',
         } : null,
-        slowAndDeadCount,
+        deadStockCount,
         topCategoryByRevenue: topCatByRevenue ? {
           categoryName: topCatByRevenue.product_category_name,
           salesAmount: toNumber(topCatByRevenue.sales_amount_30d),
@@ -1239,7 +1209,7 @@ async function fetchWorkforceDashboardData_core(filters = {}) {
   try {
     if (!scoped) {
       // ── Unscoped: unchanged all-time logic (summary table + last-30 trend) ──
-      const [summaryRows, dailyRows, boundsRows] = await Promise.all([
+      const [summaryRows, dailyRows] = await Promise.all([
         // One row per employee, pre-ranked by the pipeline.
         query(
           `SELECT employee_id, employee_name, total_shifts, total_hours,
@@ -1260,15 +1230,6 @@ async function fetchWorkforceDashboardData_core(filters = {}) {
              FROM store_pipeline.rpt_employee_productivity
            )
            ORDER BY shift_date ASC, employee_id ASC`
-        ),
-        // ITEM 3: the all-time span the summary covers — surfaced so the tab can
-        // label the period explicitly ("All time · 22 Dec 2025 – 26 Jun 2026"),
-        // removing the apparent contradiction with the Sales tab's trailing-30d view.
-        // (Verified: SUM(attributed_sales) over this span == store net sales exactly,
-        // i.e. the hour-share attribution partitions correctly — no double-count.)
-        query(
-          `SELECT MIN(shift_date)::text AS min_date, MAX(shift_date)::text AS max_date
-           FROM store_pipeline.rpt_employee_productivity`
         ),
       ]);
 
@@ -1303,18 +1264,12 @@ async function fetchWorkforceDashboardData_core(filters = {}) {
       }));
       const trendDays = new Set(dailyTrend.map((d) => d.date)).size;
 
-      const allTimeStart = toIsoDate(boundsRows?.[0]?.min_date);
-      const allTimeEnd = toIsoDate(boundsRows?.[0]?.max_date);
-      const allTimeLabel = allTimeStart && allTimeEnd
-        ? `All time · ${formatWorkforcePeriodLabel(allTimeStart, allTimeEnd)}`
-        : 'All time';
-
       return {
         employees,
         dailyTrend,
         trendDays,
         kpis: computeKpis(employees),
-        period: { start: allTimeStart, end: allTimeEnd, label: allTimeLabel, scoped: false },
+        period: { start: null, end: null, label: 'All time', scoped: false },
       };
     }
 
