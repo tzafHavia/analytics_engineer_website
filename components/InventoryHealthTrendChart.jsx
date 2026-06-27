@@ -98,6 +98,7 @@ export default function InventoryHealthTrendChart({ data = [], wowDelta = null }
       <p className="od-panel-copy">
         At-risk items (7-day average) against average days of cover — coverage falling while at-risk rises signals tightening supply.
       </p>
+      <p className="od-chart-caption">Rising at-risk is the signal to watch — get ahead of it with reorders.</p>
       <div className="od-chart-shell">
         <ResponsiveContainer width="100%" height={300}>
           <ComposedChart data={sliced} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>

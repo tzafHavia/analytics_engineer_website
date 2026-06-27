@@ -26,7 +26,9 @@
       "Bash(curl -s -o /dev/null -w \"day:%{http_code}\\\\n\" \"http://127.0.0.1:3000/test-dash?range=day&year=2026&month=3\")",
       "Bash(curl -s -o /dev/null -w \"month:%{http_code}\\\\n\" \"http://127.0.0.1:3000/test-dash?range=month&year=2026&month=3\")",
       "Bash(awk '{print $2, $11, $12, $13}')",
-      "Bash(curl -s -o /dev/null -w \"port 3000: HTTP %{http_code}\\\\n\" --max-time 2 http://localhost:3000/)"
+      "Bash(curl -s -o /dev/null -w \"port 3000: HTTP %{http_code}\\\\n\" --max-time 2 http://localhost:3000/)",
+      "Bash(git config *)",
+      "Bash(git ls-remote *)"
     ]
   }
 }

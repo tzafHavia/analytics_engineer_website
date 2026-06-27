@@ -1,6 +1,7 @@
 import OverviewTopProductsChart from '@/components/OverviewTopProductsChart';
-import CategoryTreemap from '@/components/CategoryTreemap';
+import CategoryGrossProfitBar from '@/components/CategoryGrossProfitBar';
 import ProductScatterChart from '@/components/ProductScatterChart';
+import ShowMoreTable from '@/components/ShowMoreTable';
 
 function formatCurrency(value) {
   return `₪${Number(value || 0).toLocaleString('he-IL', { maximumFractionDigits: 0 })}`;
@@ -102,17 +103,17 @@ export default function ProductsTabContent({ data }) {
         </div>
       </section>
 
-      {/* ── Top 10 bar + Category treemap ──────────────────────────────────── */}
-      <section className="od-two-col-grid od-section-spacing">
+      {/* ── Top 10 bar + Category gross-profit bar ─────────────────────────── */}
+      <section className="od-two-col-grid od-section-spacing od-section--lead">
         <OverviewTopProductsChart
           data={topProducts}
           metric={topProductMetric}
         />
-        <CategoryTreemap data={categoryData} />
+        <CategoryGrossProfitBar data={categoryData} />
       </section>
 
       {/* ── Sales vs GP scatter ─────────────────────────────────────────────── */}
-      <section className="od-section-spacing">
+      <section className="od-section-spacing od-section--secondary od-section--supporting-start">
         {scoped && (
           <div className="od-section-head" style={{ marginBottom: '0.75rem' }}>
             <div>
@@ -125,7 +126,7 @@ export default function ProductsTabContent({ data }) {
       </section>
 
       {/* ── Slow movers + Category ranking ─────────────────────────────────── */}
-      <section className="od-two-col-grid od-section-spacing">
+      <section className="od-two-col-grid od-section-spacing od-section--secondary">
         <div className="od-panel">
           <div className="od-panel-head">
             <div>
@@ -155,7 +156,7 @@ export default function ProductsTabContent({ data }) {
                     <th>Days cover</th>
                   </tr>
                 </thead>
-                <tbody>
+                <ShowMoreTable initial={12} label="items">
                   {slowMovers.map((row, i) => (
                     <tr key={`${row.itemId}-${i}`} className="table-row">
                       <td>{row.itemName}</td>
@@ -166,7 +167,7 @@ export default function ProductsTabContent({ data }) {
                       <td>{formatDoc(row.daysOfCover30d)}</td>
                     </tr>
                   ))}
-                </tbody>
+                </ShowMoreTable>
               </table>
             </div>
           )}
@@ -193,7 +194,7 @@ export default function ProductsTabContent({ data }) {
                   <th>Dead SKUs</th>
                 </tr>
               </thead>
-              <tbody>
+              <ShowMoreTable initial={12} label="categories">
                 {categoryData.map((row, i) => (
                   <tr key={row.name} className="table-row">
                     <td style={{ color: '#64748b', fontVariantNumeric: 'tabular-nums' }}>{i + 1}</td>
@@ -210,7 +211,7 @@ export default function ProductsTabContent({ data }) {
                     </td>
                   </tr>
                 ))}
-              </tbody>
+              </ShowMoreTable>
             </table>
           </div>
         </div>

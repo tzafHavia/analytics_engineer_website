@@ -61,7 +61,12 @@ export default function ProductScatterChart({ data = [] }) {
       <p className="od-panel-copy">
         Each dot = one product. X = 30-day revenue, Y = estimated gross profit. Coloured by velocity band.
       </p>
-      <div className="od-chart-shell od-chart-shell-tall">
+      <p className="od-chart-caption">A few high-volume products earn thin margin — review pricing.</p>
+      <div className="od-chart-shell od-chart-shell-tall od-quadrant-shell">
+        <span className="od-quadrant-label od-quadrant-tl">High GP / low sales · hidden margin</span>
+        <span className="od-quadrant-label od-quadrant-tr">High sales / high GP · stars</span>
+        <span className="od-quadrant-label od-quadrant-bl">Low sales / low GP · long tail</span>
+        <span className="od-quadrant-label od-quadrant-br">High sales / low GP · thin margin</span>
         <ResponsiveContainer width="100%" height={340}>
           <ScatterChart margin={{ top: 10, right: 24, left: 4, bottom: 20 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.16)" />

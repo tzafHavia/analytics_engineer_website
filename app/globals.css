@@ -1448,6 +1448,38 @@ code, pre {
 .dash-kpi-trend-down { color: #ef4444; }
 .dash-kpi-trend-flat { color: #94a3b8; }
 
+/* Inline KPI sparkline */
+.dash-kpi-sparkline {
+  display: block;
+  width: 100%;
+  margin-top: 0.7rem;
+  overflow: visible;
+}
+
+/* "Show all / Show less" footer toggle for capped tables */
+.dash-showmore-row td {
+  padding: 0.6rem 0 0.1rem;
+  text-align: center;
+  border-top: none;
+}
+.dash-showmore-btn {
+  background: transparent;
+  border: 1px solid var(--border-subtle, rgba(148, 163, 184, 0.25));
+  border-radius: 999px;
+  color: var(--text-secondary);
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 0.4rem 1.1rem;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+.dash-showmore-btn:hover {
+  color: var(--text-primary);
+  border-color: var(--teal);
+  background: rgba(0, 212, 170, 0.08);
+}
+
 /* Accent top-border variants */
 .dash-kpi-green  { border-top: 2px solid rgba(34,197,94,0.55); }
 .dash-kpi-cyan   { border-top: 2px solid rgba(0,212,170,0.55); }
@@ -1510,6 +1542,57 @@ code, pre {
 
 .od-empty-card {
   padding: 2rem 1rem;
+}
+
+/* ── Chart "so what" caption ──────────────────────────────────────────────
+   One-line, muted takeaway shown under a chart's title/description. Distinct
+   from .od-panel-copy (which explains WHAT the chart shows): this gives the
+   reader the WHY-it-matters in a single honest line. Reads in both themes. */
+.od-chart-caption {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+.od-chart-caption::before {
+  content: "→";
+  color: var(--teal);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* ── Visual hierarchy: lead vs supporting sections ────────────────────────
+   Additive treatment layered on the existing od-section / od-panel system.
+   .od-section--lead emphasises a view's primary element; .od-section--secondary
+   gently recedes below-the-fold supporting detail. No layout changes. */
+.od-section--lead .cs-section-title {
+  font-size: 1.85rem;
+}
+.od-section--lead .od-section-kicker {
+  color: var(--teal);
+}
+
+.od-section--secondary .od-section-kicker,
+.od-section--secondary .od-panel-kicker {
+  opacity: 0.78;
+}
+.od-section--secondary .cs-section-title {
+  font-size: 1.4rem;
+}
+.od-section--secondary .od-panel {
+  background: var(--bg-surface);
+}
+
+/* Subtle divider above the first supporting section, so the eye registers a
+   shift from "lead" to "supporting detail". */
+.od-section--supporting-start {
+  position: relative;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border-light);
 }
 
 .od-donut-layout {
@@ -2712,6 +2795,97 @@ select.contact-input { appearance: none; cursor: pointer; }
   padding-top: 0.75rem;
   border-top: 1px solid var(--border-light);
 }
+
+
+/* =============================================
+   SALES HOUR×WEEKDAY HEATMAP  ·  additive only
+   ============================================= */
+.sales-heatmap-wrap {
+  margin-top: 1rem;
+  overflow-x: auto;
+}
+.sales-heatmap-grid {
+  display: grid;
+  grid-template-columns: 42px repeat(24, minmax(14px, 1fr));
+  gap: 2px;
+  min-width: 520px;
+}
+.sales-heatmap-corner {
+  grid-column: 1;
+}
+.sales-heatmap-colhead {
+  font-size: 0.62rem;
+  color: var(--text-muted, #94a3b8);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+  padding-bottom: 2px;
+}
+.sales-heatmap-rowhead {
+  font-size: 0.72rem;
+  color: var(--text-secondary, #cbd5e1);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 6px;
+  font-weight: 600;
+}
+.sales-heatmap-cell {
+  aspect-ratio: 1 / 1;
+  min-height: 16px;
+  border-radius: 3px;
+  cursor: default;
+  transition: outline-color 0.08s ease;
+}
+.sales-heatmap-readout {
+  margin-top: 0.85rem;
+  font-size: 0.82rem;
+  color: var(--text-secondary, #cbd5e1);
+  min-height: 1.2em;
+}
+.sales-heatmap-legend {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.6rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--border-light);
+}
+.sales-heatmap-legend-bar {
+  flex: 1;
+  max-width: 180px;
+  height: 10px;
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    rgba(148,163,184,0.12),
+    rgba(0,212,170,0.55),
+    rgba(79,140,255,0.95)
+  );
+}
+
+
+/* =============================================
+   SCATTER QUADRANT LABELS  ·  additive only
+   ============================================= */
+.od-quadrant-shell {
+  position: relative;
+}
+.od-quadrant-label {
+  position: absolute;
+  z-index: 2;
+  font-size: 0.66rem;
+  line-height: 1.2;
+  color: var(--text-muted, #94a3b8);
+  opacity: 0.7;
+  pointer-events: none;
+  max-width: 42%;
+  letter-spacing: 0.01em;
+}
+.od-quadrant-tl { top: 14px;    left: 56px;   text-align: left; }
+.od-quadrant-tr { top: 14px;    right: 26px;  text-align: right; }
+.od-quadrant-bl { bottom: 38px; left: 56px;   text-align: left; }
+.od-quadrant-br { bottom: 38px; right: 26px;  text-align: right; }
 
 
 /* =============================================

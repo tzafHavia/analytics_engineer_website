@@ -1,6 +1,7 @@
 import EmployeeOvertimeChart from '@/components/EmployeeOvertimeChart';
 import EmployeeTrendChart from '@/components/EmployeeTrendChart';
 import WorkforceScorecard from '@/components/WorkforceScorecard';
+import StaffingVsSalesChart from '@/components/StaffingVsSalesChart';
 
 const EMPLOYEE_COLORS = ['#4F8CFF', '#00D4AA', '#A855F7'];
 
@@ -25,7 +26,7 @@ function WorkforceKpiCard({ label, value, sub, color = 'cyan' }) {
 export default function WorkforceTabContent({ data }) {
   if (!data) return null;
 
-  const { employees = [], dailyTrend = [], trendDays = 0, kpis, period } = data;
+  const { employees = [], dailyTrend = [], trendDays = 0, kpis, period, staffingVsSales = [] } = data;
 
   if (!employees.length) {
     return (
@@ -121,7 +122,7 @@ export default function WorkforceTabContent({ data }) {
       </section>
 
       {/* ── Team scorecard ─────────────────────────────────────────────────── */}
-      <section className="od-section-spacing">
+      <section className="od-section-spacing od-section--lead">
         <div className="od-panel">
           <div className="od-panel-head">
             <div>
@@ -136,14 +137,19 @@ export default function WorkforceTabContent({ data }) {
         </div>
       </section>
 
+      {/* ── Staffing vs sales by hour (unstaffed trading) ──────────────────── */}
+      <section className="od-section-spacing od-section--secondary od-section--supporting-start">
+        <StaffingVsSalesChart data={staffingVsSales} />
+      </section>
+
       {/* ── Overtime split + daily trend ───────────────────────────────────── */}
-      <section className="od-two-col-grid od-section-spacing">
+      <section className="od-two-col-grid od-section-spacing od-section--secondary">
         <EmployeeOvertimeChart data={overtimeData} />
         <EmployeeTrendChart data={pivotedTrend} series={trendSeries} trendDays={trendDays} />
       </section>
 
       {/* ── Detail table ───────────────────────────────────────────────────── */}
-      <section className="od-section-spacing">
+      <section className="od-section-spacing od-section--secondary">
         <div className="od-panel">
           <div className="od-panel-head">
             <div>

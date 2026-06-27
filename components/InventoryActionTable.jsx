@@ -1,3 +1,5 @@
+import ShowMoreTable from '@/components/ShowMoreTable';
+
 function formatDoc(days) {
   if (days == null) return '—';
   return `${Number(days).toFixed(1)}d`;
@@ -37,7 +39,7 @@ function ActionRows({ rows }) {
             <th>Recommended action</th>
           </tr>
         </thead>
-        <tbody>
+        <ShowMoreTable initial={12} label="items">
           {rows.map((row, i) => (
             <tr key={`${row.itemId}-${i}`} className="table-row">
               <td>{row.itemName}</td>
@@ -50,7 +52,7 @@ function ActionRows({ rows }) {
               <td className="inv-action-text">{row.recommendedAction || '—'}</td>
             </tr>
           ))}
-        </tbody>
+        </ShowMoreTable>
       </table>
     </div>
   );

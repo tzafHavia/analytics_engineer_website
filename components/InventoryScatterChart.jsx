@@ -80,7 +80,12 @@ export default function InventoryScatterChart({ data = [] }) {
         Each dot is a product. X = units sold in 30 days · Y = current on-hand stock.
         Top-left = overstocked; bottom-right = high-velocity with low cover.
       </p>
-      <div className="od-chart-shell od-chart-shell-tall">
+      <p className="od-chart-caption">Bottom-right needs reordering; top-left is overstock to work down.</p>
+      <div className="od-chart-shell od-chart-shell-tall od-quadrant-shell">
+        <span className="od-quadrant-label od-quadrant-tl">Overstocked · slow off the shelf</span>
+        <span className="od-quadrant-label od-quadrant-tr">High stock / high velocity · healthy</span>
+        <span className="od-quadrant-label od-quadrant-bl">Low stock / low velocity · trim</span>
+        <span className="od-quadrant-label od-quadrant-br">Reorder · selling faster than cover</span>
         <ResponsiveContainer width="100%" height={340}>
           <ScatterChart margin={{ top: 10, right: 20, left: 4, bottom: 24 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.16)" />

@@ -56,6 +56,7 @@ export default function DaysOfCoverHistogram({ data = [] }) {
         Products bucketed by how many days of stock remain at the current 30-day sales pace.
         Red = urgent risk, green = well covered.
       </p>
+      <p className="od-chart-caption">Left tail flags reorders; the long right tail is tied-up cash.</p>
       <div className="od-chart-shell">
         <ResponsiveContainer width="100%" height={260}>
           <BarChart data={data} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
