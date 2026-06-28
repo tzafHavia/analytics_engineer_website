@@ -48,7 +48,7 @@ export default function PaymentsPage() {
           <span className="page-title-accent">Payments</span> Dashboard
         </h1>
         <p className="page-desc">
-          Live data from <code>store_pipeline.stg_fact_sales</code>
+          Live data from <code>store_pipeline.rpt_daily_sales</code>
           {meta && ` — ${meta.total?.toLocaleString()} total records`}
         </p>
       </div>
