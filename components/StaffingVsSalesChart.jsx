@@ -85,6 +85,17 @@ export default function StaffingVsSalesChart({ data = [] }) {
         ring sales with little or no staff clocked in.
       </p>
       <p className="od-chart-caption">Overnight hours ring sales with little or no staff on shift.</p>
+      <p className="od-faint-note" style={{ marginTop: '-0.3rem', marginBottom: '0.4rem' }}>
+        <span
+          className="od-info-badge"
+          aria-hidden="true"
+          title="Labour hours are allocated by minute-precise shift overlap, so mid-afternoon shift change-overs and breaks make some hours (e.g. 14:00–16:00) slightly higher or lower."
+        >
+          i
+        </span>
+        Labour hours are allocated by minute-precise shift overlap — change-overs and breaks
+        (e.g. around 14:00–16:00) nudge some hours slightly up or down.
+      </p>
       <div className="od-chart-shell od-chart-shell-tall">
         <ResponsiveContainer width="100%" height={320}>
           <ComposedChart data={rows} margin={{ top: 8, right: 12, left: 0, bottom: 4 }}>

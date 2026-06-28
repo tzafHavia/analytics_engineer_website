@@ -24,13 +24,34 @@ export default function OverviewFilters({ initialFilters, options }) {
     dateTo: initialFilters.dateTo || '',
     productCategory: initialFilters.productCategory || '',
     itemName: initialFilters.itemName || '',
-    stockStatus: initialFilters.stockStatus || '',
-    velocityBand: initialFilters.velocityBand || '',
   });
+
+  const itemsByCategory = options.itemsByCategory || {};
+
+  // Items shown in the datalist: scoped to the selected category when one is set,
+  // otherwise the full list.
+  const itemOptions = filters.productCategory
+    ? (itemsByCategory[filters.productCategory] || [])
+    : options.itemNames;
 
   function handleChange(event) {
     const { name, value } = event.target;
     setFilters((current) => ({ ...current, [name]: value }));
+  }
+
+  function handleCategoryChange(event) {
+    const nextCategory = event.target.value;
+    setFilters((current) => {
+      // If the currently typed item isn't part of the new category, clear it so a
+      // stale item value doesn't silently filter to nothing.
+      const allowedItems = nextCategory ? (itemsByCategory[nextCategory] || []) : null;
+      const keepItem = !allowedItems || allowedItems.includes(current.itemName);
+      return {
+        ...current,
+        productCategory: nextCategory,
+        itemName: keepItem ? current.itemName : '',
+      };
+    });
   }
 
   function applyFilters(event) {
@@ -46,8 +67,6 @@ export default function OverviewFilters({ initialFilters, options }) {
       dateTo: '',
       productCategory: '',
       itemName: '',
-      stockStatus: '',
-      velocityBand: '',
     };
 
     setFilters(emptyFilters);
@@ -82,7 +101,7 @@ export default function OverviewFilters({ initialFilters, options }) {
 
         <label className="od-filter-field">
           <span>Product category</span>
-          <select name="productCategory" value={filters.productCategory} onChange={handleChange}>
+          <select name="productCategory" value={filters.productCategory} onChange={handleCategoryChange}>
             <option value="">All categories</option>
             {options.productCategories.map((value) => (
               <option key={value} value={value}>
@@ -99,37 +118,13 @@ export default function OverviewFilters({ initialFilters, options }) {
             name="itemName"
             value={filters.itemName}
             onChange={handleChange}
-            placeholder="All items"
+            placeholder={filters.productCategory ? 'All items in category' : 'All items'}
           />
           <datalist id="overview-item-options">
-            {options.itemNames.map((value) => (
+            {itemOptions.map((value) => (
               <option key={value} value={value} />
             ))}
           </datalist>
-        </label>
-
-        <label className="od-filter-field">
-          <span>Stock status</span>
-          <select name="stockStatus" value={filters.stockStatus} onChange={handleChange}>
-            <option value="">All stock states</option>
-            {options.stockStatuses.map((item) => (
-              <option key={item.value} value={item.value}>
-                {item.label}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label className="od-filter-field">
-          <span>Velocity band</span>
-          <select name="velocityBand" value={filters.velocityBand} onChange={handleChange}>
-            <option value="">All velocity bands</option>
-            {options.velocityBands.map((item) => (
-              <option key={item.value} value={item.value}>
-                {item.label}
-              </option>
-            ))}
-          </select>
         </label>
 
         <div className="od-filter-actions">

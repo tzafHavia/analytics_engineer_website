@@ -4,6 +4,7 @@ import InventoryScatterChart from '@/components/InventoryScatterChart';
 import InventoryActionTable from '@/components/InventoryActionTable';
 import InventoryHealthTrendChart from '@/components/InventoryHealthTrendChart';
 import InventoryStatusCompositionChart from '@/components/InventoryStatusCompositionChart';
+import TabFilterBar from '@/components/TabFilterBar';
 
 function formatDoc(days) {
   if (days == null) return '—';
@@ -40,8 +41,23 @@ function buildAtRiskChip(delta) {
   return { arrow, toneClass, text: `${sign}${d.toLocaleString('he-IL')} WoW` };
 }
 
-export default function InventoryTabContent({ data }) {
+export default function InventoryTabContent({ data, filterOptions = {} }) {
   if (!data) return null;
+
+  const tabSelectors = [
+    {
+      param: 'stockStatus',
+      label: 'Stock status',
+      allLabel: 'All stock states',
+      options: filterOptions.stockStatuses || [],
+    },
+    {
+      param: 'velocityBand',
+      label: 'Velocity band',
+      allLabel: 'All velocity bands',
+      options: filterOptions.velocityBands || [],
+    },
+  ];
 
   const {
     snapshotDate, kpis,
@@ -79,6 +95,7 @@ export default function InventoryTabContent({ data }) {
             </span>
           )}
         </div>
+        <TabFilterBar selectors={tabSelectors} />
         <div className="dash-kpi-dark-grid">
           {kpiCards.map(card => (
             <InvKpiCard

@@ -3,7 +3,7 @@ import SalesByHourChart from '@/components/SalesByHourChart';
 import PaymentMixDonut from '@/components/PaymentMixDonut';
 import SalesHourWeekdayHeatmap from '@/components/SalesHourWeekdayHeatmap';
 import KpiSparkline from '@/components/KpiSparkline';
-import ShowMoreTable from '@/components/ShowMoreTable';
+import ReturnsTable from '@/components/ReturnsTable';
 
 function formatCurrency(value) {
   return `₪${Number(value || 0).toLocaleString('he-IL', { maximumFractionDigits: 0 })}`;
@@ -153,51 +153,7 @@ export default function SalesTabContent({ data }) {
 
       {/* ── Returns breakdown ──────────────────────────────────────────────── */}
       <section className="od-section-spacing od-section--secondary">
-        <div className="od-panel">
-          <div className="od-panel-head">
-            <div>
-              <p className="od-panel-kicker">Returns · {periodLabel}</p>
-              <h3>Top returning products</h3>
-            </div>
-            {returnsByProduct.length > 0 && (
-              <span className="od-faint-note">{returnsByProduct.length} products</span>
-            )}
-          </div>
-          <p className="od-panel-copy">
-            Products ranked by return amount within the selected period.
-          </p>
-          {returnsByProduct.length === 0 ? (
-            <div className="table-empty od-empty-card">
-              <span>✓</span>
-              <p>No returns recorded for this period.</p>
-            </div>
-          ) : (
-            <div className="table-wrapper" style={{ marginTop: '1rem' }}>
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Product</th>
-                    <th>Category</th>
-                    <th>Return qty</th>
-                    <th>Return amount</th>
-                    <th>Tickets</th>
-                  </tr>
-                </thead>
-                <ShowMoreTable initial={12} label="products">
-                  {returnsByProduct.map((row, i) => (
-                    <tr key={`${row.itemId}-${i}`} className="table-row">
-                      <td>{row.itemName}</td>
-                      <td>{row.categoryName}</td>
-                      <td>{Number(row.returnQty).toLocaleString('he-IL')}</td>
-                      <td>{formatCurrency(row.returnAmount)}</td>
-                      <td>{Number(row.returnTickets).toLocaleString('he-IL')}</td>
-                    </tr>
-                  ))}
-                </ShowMoreTable>
-              </table>
-            </div>
-          )}
-        </div>
+        <ReturnsTable rows={returnsByProduct} periodLabel={periodLabel} />
       </section>
     </>
   );

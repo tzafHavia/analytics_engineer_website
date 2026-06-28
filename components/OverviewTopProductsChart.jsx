@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo, useState } from 'react';
 import {
   Bar,
   BarChart,
@@ -63,6 +64,7 @@ function ProductTooltip({ active, payload, metric }) {
 export default function OverviewTopProductsChart({
   data = [],
   footerLink,
+  enableCategoryFilter = false,
   metric = {
     key: 'salesAmount30d',
     label: 'Revenue',
@@ -71,6 +73,18 @@ export default function OverviewTopProductsChart({
     valueFormat: 'currency-compact',
   },
 }) {
+  const [selectedCategory, setSelectedCategory] = useState('');
+
+  // Distinct categories present in the data rows (only used when the filter is on).
+  const categories = useMemo(() => {
+    if (!enableCategoryFilter) return [];
+    const set = new Set();
+    data.forEach((item) => {
+      if (item.categoryName) set.add(item.categoryName);
+    });
+    return Array.from(set).sort((a, b) => a.localeCompare(b, 'he'));
+  }, [data, enableCategoryFilter]);
+
   if (!data.length) {
     return (
       <div className="od-panel od-panel-empty">
@@ -89,10 +103,16 @@ export default function OverviewTopProductsChart({
     );
   }
 
-  const chartData = data.map((item) => ({
-    ...item,
-    chartValue: Number(item[metric.key] || 0),
-  }));
+  // When the category filter is enabled, filter → re-sort by metric desc → top 10.
+  // With "All" (or filter disabled) we keep the incoming order and cap at 10.
+  const sourceRows = enableCategoryFilter && selectedCategory
+    ? data.filter((item) => item.categoryName === selectedCategory)
+    : data;
+
+  const chartData = sourceRows
+    .map((item) => ({ ...item, chartValue: Number(item[metric.key] || 0) }))
+    .sort((a, b) => b.chartValue - a.chartValue)
+    .slice(0, 10);
 
   return (
     <div className="od-panel" id="overview-top-products">
@@ -101,7 +121,22 @@ export default function OverviewTopProductsChart({
           <p className="od-panel-kicker">Products</p>
           <h3>{metric.heading}</h3>
         </div>
-        {footerLink ? (
+        {enableCategoryFilter && categories.length > 0 ? (
+          <label className="od-filter-field od-filter-field--inline od-chart-filter">
+            <span>Category</span>
+            <select
+              value={selectedCategory}
+              onChange={(event) => setSelectedCategory(event.target.value)}
+            >
+              <option value="">All categories</option>
+              {categories.map((value) => (
+                <option key={value} value={value}>
+                  {value}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : footerLink ? (
           <a href={footerLink.href} className="od-inline-link">
             {footerLink.label}
           </a>

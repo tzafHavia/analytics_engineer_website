@@ -1,9 +1,7 @@
 import EmployeeOvertimeChart from '@/components/EmployeeOvertimeChart';
-import EmployeeTrendChart from '@/components/EmployeeTrendChart';
+import DailyEmployeeSalesChart from '@/components/DailyEmployeeSalesChart';
 import WorkforceScorecard from '@/components/WorkforceScorecard';
 import StaffingVsSalesChart from '@/components/StaffingVsSalesChart';
-
-const EMPLOYEE_COLORS = ['#4F8CFF', '#00D4AA', '#A855F7'];
 
 function formatCurrency(value) {
   return `₪${Number(value || 0).toLocaleString('he-IL', { maximumFractionDigits: 0 })}`;
@@ -26,7 +24,7 @@ function WorkforceKpiCard({ label, value, sub, color = 'cyan' }) {
 export default function WorkforceTabContent({ data }) {
   if (!data) return null;
 
-  const { employees = [], dailyTrend = [], trendDays = 0, kpis, period, staffingVsSales = [] } = data;
+  const { employees = [], kpis, period, staffingVsSales = [], dailyEmployeeSales = [] } = data;
 
   if (!employees.length) {
     return (
@@ -39,10 +37,6 @@ export default function WorkforceTabContent({ data }) {
     );
   }
 
-  // Color per employee (stable by sales-rank order from the query).
-  const colorFor = {};
-  employees.forEach((e, i) => { colorFor[e.employeeId] = EMPLOYEE_COLORS[i % EMPLOYEE_COLORS.length]; });
-
   // Overtime chart: one row per employee with the three tier columns.
   const overtimeData = employees.map((e) => ({
     employeeName: e.employeeName,
@@ -50,19 +44,6 @@ export default function WorkforceTabContent({ data }) {
     ot125Hours: e.ot125Hours,
     ot150Hours: e.ot150Hours,
   }));
-
-  // Trend chart: pivot daily rows to one row per date, a column per employee.
-  const trendSeries = employees.map((e) => ({
-    key: `emp_${e.employeeId}`,
-    name: e.employeeName,
-    color: colorFor[e.employeeId],
-  }));
-  const byDate = new Map();
-  for (const row of dailyTrend) {
-    if (!byDate.has(row.date)) byDate.set(row.date, { date: row.date });
-    byDate.get(row.date)[`emp_${row.employeeId}`] = row.salesAmount;
-  }
-  const pivotedTrend = Array.from(byDate.values());
 
   const kpiCards = [
     {
@@ -145,7 +126,7 @@ export default function WorkforceTabContent({ data }) {
       {/* ── Overtime split + daily trend ───────────────────────────────────── */}
       <section className="od-two-col-grid od-section-spacing od-section--secondary">
         <EmployeeOvertimeChart data={overtimeData} />
-        <EmployeeTrendChart data={pivotedTrend} series={trendSeries} trendDays={trendDays} />
+        <DailyEmployeeSalesChart data={dailyEmployeeSales} />
       </section>
 
       {/* ── Detail table ───────────────────────────────────────────────────── */}

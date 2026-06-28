@@ -1212,13 +1212,106 @@ code, pre {
   background: var(--bg-card);
   color: var(--text-primary);
   padding: 0.7rem 0.85rem;
+  font-size: 0.88rem;
   outline: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+
+.od-filter-field input:hover,
+.od-filter-field select:hover {
+  border-color: var(--border);
 }
 
 .od-filter-field input:focus,
 .od-filter-field select:focus {
   border-color: var(--purple);
   box-shadow: 0 0 0 3px rgba(79,140,255,0.12);
+}
+
+/* Native <select> arrow: theme-aware caret drawn with the muted text colour,
+   keeps both themes legible without a hardcoded glyph colour. */
+.od-filter-field select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding-inline-end: 2.1rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  cursor: pointer;
+}
+[dir="rtl"] .od-filter-field select {
+  background-position: left 0.75rem center;
+}
+/* Ensure dropdown option list is readable in both themes (native menus
+   otherwise inherit the OS default rather than the page surface). */
+.od-filter-field option {
+  background: var(--bg-card);
+  color: var(--text-primary);
+}
+
+/* ── Compact inline per-tab filter bar (Inventory / Products) ────────────────
+   A deliberate, self-contained control strip that sits above the tab content.
+   Mirrors the od-filter-panel surface so it reads as a sibling control. */
+.od-tab-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem 1.1rem;
+  margin-bottom: 1.25rem;
+  padding: 0.85rem 1rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+}
+
+/* Inline field variant: label sits tight above a compact select. */
+.od-filter-field--inline {
+  min-width: 190px;
+  flex: 0 1 auto;
+  gap: 0.3rem;
+}
+
+.od-filter-field--inline span {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.od-filter-field--inline select {
+  min-height: 38px;
+  padding: 0.45rem 0.7rem;
+  padding-inline-end: 1.9rem;
+  font-size: 0.85rem;
+}
+
+/* Chart-header control: an unobtrusive select tucked beside a panel title. */
+.od-chart-filter {
+  min-width: 170px;
+  flex-shrink: 0;
+  align-items: flex-end;
+}
+
+.od-chart-filter span {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+.od-chart-filter select {
+  min-height: 34px;
+  padding: 0.35rem 0.6rem;
+  padding-inline-end: 1.8rem;
+  font-size: 0.82rem;
+}
+
+.od-tab-filter-clear {
+  min-height: 38px;
+  padding: 0.5rem 1rem;
+  font-size: 0.82rem;
+  align-self: flex-end;
+  margin-inline-start: auto;
 }
 
 .od-filter-actions {
@@ -1565,6 +1658,35 @@ code, pre {
   flex-shrink: 0;
 }
 
+/* ── Inline info "i" badge ────────────────────────────────────────────────
+   Small circular help affordance shown inline ahead of a footnote. Uses the
+   muted text colour and a tinted ring so it stays legible in both themes
+   without any hardcoded hex. */
+.od-info-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.05rem;
+  height: 1.05rem;
+  margin-inline-end: 0.4rem;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg-card-hover);
+  color: var(--text-secondary);
+  font-size: 0.64rem;
+  font-style: italic;
+  font-weight: 700;
+  line-height: 1;
+  cursor: help;
+  vertical-align: middle;
+  transition: color 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+.od-info-badge:hover {
+  color: var(--text-primary);
+  border-color: var(--purple);
+}
+
 /* ── Visual hierarchy: lead vs supporting sections ────────────────────────
    Additive treatment layered on the existing od-section / od-panel system.
    .od-section--lead emphasises a view's primary element; .od-section--secondary
@@ -1666,6 +1788,14 @@ code, pre {
 
   .od-filter-form {
     grid-template-columns: 1fr;
+  }
+
+  .od-tab-filter-bar .od-filter-field--inline {
+    min-width: 100%;
+  }
+
+  .od-tab-filter-clear {
+    margin-inline-start: 0;
   }
 
   .od-summary-stats div {

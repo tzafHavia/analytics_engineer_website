@@ -512,6 +512,7 @@ export default async function ConvenienceStoreDashboardPage({ searchParams }) {
             <OverviewTopProductsChart
               data={overview.topProducts}
               metric={overview.topProductsMetric}
+              enableCategoryFilter
               footerLink={{ href: '#overview-top-products', label: 'Top 10 live ranking' }}
             />
             <InventoryStatusDonut
@@ -539,8 +540,8 @@ export default async function ConvenienceStoreDashboardPage({ searchParams }) {
 
       {/* ══ Other tabs — placeholders until implemented ═══════════════════════ */}
       {tab === 'sales'     && <SalesTabContent data={salesData} />}
-      {tab === 'inventory' && <InventoryTabContent data={inventoryData} />}
-      {tab === 'products'  && <ProductsTabContent data={productsData} />}
+      {tab === 'inventory' && <InventoryTabContent data={inventoryData} filterOptions={filterOptions} />}
+      {tab === 'products'  && <ProductsTabContent data={productsData} filterOptions={filterOptions} />}
       {tab === 'workforce' && <WorkforceTabContent data={workforceData} />}
     </div>
   );

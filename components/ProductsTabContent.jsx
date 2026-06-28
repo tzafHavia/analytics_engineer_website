@@ -2,6 +2,7 @@ import OverviewTopProductsChart from '@/components/OverviewTopProductsChart';
 import CategoryGrossProfitBar from '@/components/CategoryGrossProfitBar';
 import ProductScatterChart from '@/components/ProductScatterChart';
 import ShowMoreTable from '@/components/ShowMoreTable';
+import TabFilterBar from '@/components/TabFilterBar';
 
 function formatCurrency(value) {
   return `₪${Number(value || 0).toLocaleString('he-IL', { maximumFractionDigits: 0 })}`;
@@ -32,10 +33,25 @@ function VelocityBadge({ band }) {
   return <span className="inv-badge inv-badge-blue">{band || '—'}</span>;
 }
 
-export default function ProductsTabContent({ data }) {
+export default function ProductsTabContent({ data, filterOptions = {} }) {
   if (!data) return null;
 
   const { kpis, topProducts, slowMovers, categoryData, scatterData, period } = data;
+
+  const tabSelectors = [
+    {
+      param: 'velocityBand',
+      label: 'Velocity band',
+      allLabel: 'All velocity bands',
+      options: filterOptions.velocityBands || [],
+    },
+    {
+      param: 'stockStatus',
+      label: 'Stock status',
+      allLabel: 'All stock states',
+      options: filterOptions.stockStatuses || [],
+    },
+  ];
 
   const scoped = period?.scoped;
   const periodLabel = period?.label || 'Rolling 30-day window';
@@ -96,6 +112,7 @@ export default function ProductsTabContent({ data }) {
           </div>
           <span className="od-faint-note">{periodLabel}</span>
         </div>
+        <TabFilterBar selectors={tabSelectors} />
         <div className="dash-kpi-dark-grid">
           {kpiCards.map(card => (
             <ProductKpiCard key={card.label} {...card} />
