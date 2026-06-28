@@ -15,7 +15,12 @@
       "Bash(curl -s -o /dev/null -w \"3001=%{http_code}\\\\n\" --max-time 30 \"http://localhost:3001/test-dash?range=day&year=2026&month=3&dow=2\")",
       "Bash(curl -s -o /dev/null -w \"3001=%{http_code}\\\\n\" --max-time 5 \"http://localhost:3001/\")",
       "Bash(node --experimental-vm-modules -e ' *)",
-      "Bash(pkill -9 -f \"next\")"
+      "Bash(pkill -9 -f \"next\")",
+      "Bash(git add *)",
+      "Bash(git commit -q -m 'Fix payments caption to real source \\(rpt_daily_sales\\) + add prod-allowlist confirmation & deploy-prep docs *)",
+      "Bash(pkill -f \"next dev\")",
+      "Bash(pkill -f \"next-server\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/)"
     ]
   }
 }
