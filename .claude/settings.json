@@ -20,7 +20,10 @@
       "Bash(git commit -q -m 'Fix payments caption to real source \\(rpt_daily_sales\\) + add prod-allowlist confirmation & deploy-prep docs *)",
       "Bash(pkill -f \"next dev\")",
       "Bash(pkill -f \"next-server\")",
-      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/)"
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/)",
+      "Bash(curl -s -o /dev/null -w \"port3000=%{http_code}\\\\n\" --max-time 4 http://localhost:3000/)",
+      "Bash(git commit -q -m 'R5 repo hygiene + R4 QA pass *)",
+      "Bash(git push *)"
     ]
   }
 }

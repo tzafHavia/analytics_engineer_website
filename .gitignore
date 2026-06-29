@@ -48,12 +48,11 @@ SUPABASE_LOAD_REDUCTION_PLAN.md
 HANDOFF_TO_WEBSITE_2026-06-13_R2.md
 HANDOFF_TO_WEBSITE_2026-06-13.md
 TEST_DASH.md
-SUPABASE_LOAD_REDUCTION_PLAN-.md
-SUPABASE_LOAD_REDUCTION_PLAN.md
-SUPABASE_LOAD_REDUCTION_PLAN - Copy.md
-SUPABASE_LOAD_REDUCTION_PLAN - Copy.md
-SUPABASE_LOAD_REDUCTION_PLAN - Copy.md:Zone.Identifier
+SUPABASE_LOAD_REDUCTION_PLAN*.md
 docs.md
+
+# Windows "mark of the web" alternate-data-stream cruft (created when files are downloaded)
+*:Zone.Identifier
 Overview_Section_implmetion.md
 # vercel
 .vercel
