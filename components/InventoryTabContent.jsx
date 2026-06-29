@@ -4,6 +4,7 @@ import InventoryScatterChart from '@/components/InventoryScatterChart';
 import InventoryActionTable from '@/components/InventoryActionTable';
 import InventoryHealthTrendChart from '@/components/InventoryHealthTrendChart';
 import InventoryStatusCompositionChart from '@/components/InventoryStatusCompositionChart';
+import WorstOffendersTable from '@/components/WorstOffendersTable';
 import TabFilterBar from '@/components/TabFilterBar';
 
 function formatDoc(days) {
@@ -41,7 +42,7 @@ function buildAtRiskChip(delta) {
   return { arrow, toneClass, text: `${sign}${d.toLocaleString('he-IL')} WoW` };
 }
 
-export default function InventoryTabContent({ data, filterOptions = {} }) {
+export default function InventoryTabContent({ data, filterOptions = {}, worstOffenders = [] }) {
   if (!data) return null;
 
   const tabSelectors = [
@@ -143,6 +144,23 @@ export default function InventoryTabContent({ data, filterOptions = {} }) {
         />
           <InventoryStatusCompositionChart data={healthTrend} />
         </div>
+      </section>
+
+      {/* ── Chronic stockout offenders (drill-down) ────────────────────────── */}
+      <section className="od-section-spacing od-section--secondary">
+        <div className="od-section-head" style={{ marginBottom: '1rem' }}>
+          <div>
+            <p className="od-section-kicker">Drill-down</p>
+            <h2 className="cs-section-title">Chronic stockout offenders</h2>
+          </div>
+        </div>
+        <p className="od-chart-caption">
+          The actionable signal is STOCKOUT_RISK days and the longest at-risk streak — items that
+          repeatedly run thin without fully selling out. OUT_OF_STOCK rows skew toward 100% by data
+          design (on-hand comes from a single-row source), so lead with streaks and risk over raw
+          at-risk %.
+        </p>
+        <WorstOffendersTable items={worstOffenders} />
       </section>
 
       {/* ── Status donut + coverage histogram ──────────────────────────────── */}

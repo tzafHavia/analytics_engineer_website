@@ -1285,6 +1285,70 @@ code, pre {
   font-size: 0.85rem;
 }
 
+/* Worst-offenders table: "at risk only" toggle, count, and per-row risk bar. */
+.wo-toggle {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  align-self: flex-end;
+  min-height: 38px;
+  cursor: pointer;
+}
+
+.wo-toggle input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--blue);
+  cursor: pointer;
+}
+
+.wo-toggle span {
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 0.8rem;
+  color: var(--text-primary);
+}
+
+.wo-count {
+  margin-inline-start: auto;
+  align-self: flex-end;
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.wo-riskbar-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 130px;
+}
+
+.wo-riskbar-track {
+  position: relative;
+  flex: 1 1 auto;
+  height: 8px;
+  min-width: 64px;
+  border-radius: 999px;
+  background: var(--border-light);
+  overflow: hidden;
+}
+
+.wo-riskbar-fill {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  border-radius: 999px;
+}
+
+.wo-riskbar-value {
+  flex: 0 0 auto;
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+
 /* Chart-header control: an unobtrusive select tucked beside a panel title. */
 .od-chart-filter {
   min-width: 170px;

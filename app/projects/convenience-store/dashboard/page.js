@@ -10,7 +10,7 @@ import InventoryTabContent from '@/components/InventoryTabContent';
 import SalesTabContent from '@/components/SalesTabContent';
 import WorkforceTabContent from '@/components/WorkforceTabContent';
 import ProductsTabContent from '@/components/ProductsTabContent';
-import { fetchOverviewDashboardData, fetchOverviewFilterOptions, fetchInventoryDashboardData, fetchSalesDashboardData, fetchProductsDashboardData, fetchWorkforceDashboardData } from '@/lib/dashboardData';
+import { fetchOverviewDashboardData, fetchOverviewFilterOptions, fetchInventoryDashboardData, fetchSalesDashboardData, fetchProductsDashboardData, fetchWorkforceDashboardData, fetchWorstOffendersData } from '@/lib/dashboardData';
 
 // ─── Format helpers ───────────────────────────────────────────────────────────
 
@@ -212,6 +212,7 @@ export default async function ConvenienceStoreDashboardPage({ searchParams }) {
   // Fetch data only for the active tab
   let overview = null;
   let inventoryData = null;
+  let worstOffenders = [];
   let salesData = null;
   let productsData = null;
   let workforceData = null;
@@ -264,10 +265,13 @@ export default async function ConvenienceStoreDashboardPage({ searchParams }) {
     } catch (_) {}
   } else if (tab === 'inventory') {
     try {
-      [inventoryData, filterOptions] = await Promise.all([
+      let worstOffendersResult = { items: [] };
+      [inventoryData, filterOptions, worstOffendersResult] = await Promise.all([
         fetchInventoryDashboardData(filters),
         fetchOverviewFilterOptions(),
+        fetchWorstOffendersData(),
       ]);
+      worstOffenders = worstOffendersResult?.items || [];
     } catch (_) {}
   } else if (tab === 'workforce') {
     try {
@@ -540,7 +544,7 @@ export default async function ConvenienceStoreDashboardPage({ searchParams }) {
 
       {/* ══ Other tabs — placeholders until implemented ═══════════════════════ */}
       {tab === 'sales'     && <SalesTabContent data={salesData} />}
-      {tab === 'inventory' && <InventoryTabContent data={inventoryData} filterOptions={filterOptions} />}
+      {tab === 'inventory' && <InventoryTabContent data={inventoryData} filterOptions={filterOptions} worstOffenders={worstOffenders} />}
       {tab === 'products'  && <ProductsTabContent data={productsData} filterOptions={filterOptions} />}
       {tab === 'workforce' && <WorkforceTabContent data={workforceData} />}
     </div>
