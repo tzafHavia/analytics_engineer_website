@@ -25,7 +25,7 @@ function formatValue(value, format = 'number') {
   const numericValue = Number(value ?? 0);
 
   if (format === 'currency-compact') {
-    return `₪${Math.round(numericValue / 1000)}k`;
+    return `₪${Number((numericValue / 1000).toFixed(1))}k`;
   }
 
   if (format === 'currency') {
@@ -62,8 +62,8 @@ export default function OverviewTrendChart({
   noDataMessage,
   activeLabel,
 }) {
-  // Line vs. Bar toggle — local to each chart instance.
-  const [chartType, setChartType] = useState('line');
+  // Line vs. Bar toggle — local to each chart instance. Defaults to Bar.
+  const [chartType, setChartType] = useState('bar');
 
   if (!data.length) {
     return (

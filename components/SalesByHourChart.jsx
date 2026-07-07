@@ -70,7 +70,7 @@ export default function SalesByHourChart({ data = [] }) {
               tick={{ fill: '#94a3b8', fontSize: 11 }}
               tickLine={false}
               axisLine={false}
-              tickFormatter={(v) => `₪${Math.round(v / 1000)}k`}
+              tickFormatter={(v) => `₪${Number((v / 1000).toFixed(1))}k`}
               width={52}
             />
             <Tooltip content={<HourTooltip />} cursor={{ fill: 'rgba(99,102,241,0.08)' }} />

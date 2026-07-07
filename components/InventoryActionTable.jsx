@@ -17,8 +17,17 @@ function StatusBadge({ status, velocityBand }) {
   return <span className="inv-badge inv-badge-blue">{status || velocityBand || '—'}</span>;
 }
 
+/** Placeholder rows (unmapped/uncategorized) sort after real items. */
+function isPlaceholderRow(row) {
+  return row?.itemName === '(unmapped item)' || row?.categoryName === '(uncategorized)';
+}
+
 function ActionRows({ rows }) {
-  if (!rows.length) {
+  // Stable pass: keep real items first, group placeholder rows at the bottom.
+  const orderedRows = [...rows].sort(
+    (left, right) => (isPlaceholderRow(left) ? 1 : 0) - (isPlaceholderRow(right) ? 1 : 0),
+  );
+  if (!orderedRows.length) {
     return (
       <div className="table-empty" style={{ padding: '2rem' }}>
         <span style={{ fontSize: '1.5rem', display: 'block', marginBottom: '0.5rem' }}>✓</span>
@@ -40,14 +49,14 @@ function ActionRows({ rows }) {
           </tr>
         </thead>
         <ShowMoreTable initial={12} label="items">
-          {rows.map((row, i) => (
+          {orderedRows.map((row, i) => (
             <tr key={`${row.itemId}-${i}`} className="table-row">
               <td>{row.itemName}</td>
               <td>{row.categoryName}</td>
               <td>
                 <StatusBadge status={row.stockStatus} velocityBand={row.velocityBand} />
               </td>
-              <td>{row.inventoryQty}</td>
+              <td>{Number(row.inventoryQty ?? 0).toLocaleString('he-IL', { maximumFractionDigits: 0 })}</td>
               <td>{formatDoc(row.daysOfCover30d)}</td>
               <td className="inv-action-text">{row.recommendedAction || '—'}</td>
             </tr>

@@ -67,6 +67,11 @@ function compareValues(left, right, type) {
   return (Number(left) || 0) - (Number(right) || 0);
 }
 
+/** Placeholder rows (unmapped/uncategorized) sort after real items. */
+function isPlaceholderRow(row) {
+  return row?.itemName === '(unmapped item)' || row?.categoryName === '(uncategorized)';
+}
+
 export default function WorstOffendersTable({ items = [] }) {
   const [riskOnly, setRiskOnly] = useState(true);
   const [category, setCategory] = useState('');
@@ -101,6 +106,8 @@ export default function WorstOffendersTable({ items = [] }) {
       const result = compareValues(left[sortKey], right[sortKey], column.type);
       return direction === 'asc' ? result : -result;
     });
+    // Stable pass: keep real items first, group placeholder rows at the bottom.
+    next.sort((left, right) => (isPlaceholderRow(left) ? 1 : 0) - (isPlaceholderRow(right) ? 1 : 0));
     return next;
   }, [filtered, sortKey, direction]);
 

@@ -142,7 +142,7 @@ export default function DailyEmployeeSalesChart({ data = [] }) {
               tick={{ fill: '#94a3b8', fontSize: 11 }}
               tickLine={false}
               axisLine={false}
-              tickFormatter={(v) => `₪${Math.round(v / 1000)}k`}
+              tickFormatter={(v) => `₪${Number((v / 1000).toFixed(1))}k`}
               width={48}
             />
             <Tooltip content={<DailyTooltip />} cursor={{ fill: 'rgba(79,140,255,0.08)' }} />

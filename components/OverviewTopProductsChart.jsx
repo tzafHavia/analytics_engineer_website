@@ -24,7 +24,7 @@ function formatNumber(value) {
 
 function formatMetric(value, format) {
   if (format === 'currency-compact') {
-    return `₪${Math.round(Number(value || 0) / 1000)}k`;
+    return `₪${Number((Number(value || 0) / 1000).toFixed(1))}k`;
   }
 
   if (format === 'currency') {

@@ -31,8 +31,8 @@ function ScatterTooltipContent({ active, payload }) {
     <div className="chart-tooltip">
       <p className="tooltip-label">{d.itemName}</p>
       <p style={{ color: '#94a3b8', fontSize: '0.78rem', marginBottom: '0.3rem' }}>{d.categoryName}</p>
-      <p>Inventory: <strong>{d.inventoryQty}</strong></p>
-      <p>Sold (30d): <strong>{d.soldQty30d}</strong></p>
+      <p>Inventory: <strong>{Number(d.inventoryQty ?? 0).toLocaleString('he-IL', { maximumFractionDigits: 0 })}</strong></p>
+      <p>Sold (30d): <strong>{Number(d.soldQty30d ?? 0).toLocaleString('he-IL', { maximumFractionDigits: 0 })}</strong></p>
       {d.daysOfCover30d != null && (
         <p>Days of cover: <strong>{Number(d.daysOfCover30d).toFixed(1)}d</strong></p>
       )}

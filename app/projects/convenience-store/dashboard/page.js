@@ -348,18 +348,26 @@ export default async function ConvenienceStoreDashboardPage({ searchParams }) {
       color: 'orange',
     },
     {
-      label: 'Dead stock items',
+      label: 'Dead stock (on hand)',
       value: formatNumber(overview.kpis.deadStockCount),
-      sub: 'No sales in 90d — latest snapshot',
+      sub: 'DEAD_STOCK status — latest snapshot',
       color: 'purple',
     },
     {
-      label: 'Avg days of cover',
+      label: 'Median days of cover',
+      value: overview.kpis.medianDaysOfCover != null
+        ? `${Number(overview.kpis.medianDaysOfCover).toFixed(1)}d`
+        : '—',
+      sub: 'Median stock coverage across SKUs (30d)',
+      color: 'cyan',
+    },
+    {
+      label: 'Avg days of cover (skewed by overstock)',
       value: overview.kpis.avgDaysOfCover != null
         ? `${Number(overview.kpis.avgDaysOfCover).toFixed(1)}d`
         : '—',
-      sub: 'Avg stock coverage across SKUs (30d)',
-      color: 'cyan',
+      sub: 'Mean — inflated by overstocked SKUs',
+      color: '',
     },
   ] : [];
 

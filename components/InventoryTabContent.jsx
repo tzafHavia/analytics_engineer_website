@@ -76,8 +76,10 @@ export default function InventoryTabContent({ data, filterOptions = {}, worstOff
     { label: 'Out of stock',         value: kpis.outOfStockCount.toLocaleString('he-IL'), sub: 'Needs immediate reorder',         color: 'red'    },
     { label: 'Stockout risk',        value: kpis.stockoutRiskCount.toLocaleString('he-IL'), sub: 'Low stock — act soon',          color: 'orange', chip: atRiskChip },
     { label: 'Overstocked',          value: kpis.overstockCount.toLocaleString('he-IL'), sub: 'Excess vs. 30d pace',             color: 'green'  },
-    { label: 'Dead stock',           value: kpis.deadStockCount.toLocaleString('he-IL'), sub: 'Dead stock (latest snapshot)',    color: 'purple' },
-    { label: 'Avg days of cover',    value: formatDoc(kpis.avgDaysOfCover),                sub: 'Avg across all tracked SKUs',   color: 'cyan'   },
+    { label: 'Dead stock (on hand)', value: kpis.deadStockCount.toLocaleString('he-IL'), sub: 'DEAD_STOCK status · latest snapshot', color: 'purple' },
+    { label: 'No recent sales',      value: Number(kpis.noRecentSalesCount ?? 0).toLocaleString('he-IL'), sub: 'Zero sales in recent window', color: 'purple' },
+    { label: 'Median days of cover', value: formatDoc(kpis.medianDaysOfCover), sub: 'Median across tracked SKUs',    color: 'cyan'   },
+    { label: 'Avg days of cover (skewed by overstock)', value: formatDoc(kpis.avgDaysOfCover), sub: 'Mean — inflated by overstocked SKUs', color: '' },
   ];
 
   return (

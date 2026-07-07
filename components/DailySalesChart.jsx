@@ -54,7 +54,7 @@ export default function DailySalesChart({ data = [] }) {
             tick={{ fill: '#94a3b8', fontSize: 11 }}
             tickLine={false}
             axisLine={false}
-            tickFormatter={(v) => `₪${(v / 1000).toFixed(0)}k`}
+            tickFormatter={(v) => `₪${Number((v / 1000).toFixed(1))}k`}
           />
           <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(99,102,241,0.1)' }} />
           <Bar dataKey="total" fill="url(#barGradient)" radius={[4, 4, 0, 0]} />

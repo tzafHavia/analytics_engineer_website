@@ -83,9 +83,9 @@ export default function ReturnsTable({ rows = [], periodLabel }) {
                 <tr key={`${row.itemId}-${i}`} className="table-row">
                   <td>{row.itemName}</td>
                   <td>{row.categoryName}</td>
-                  <td>{Number(row.returnQty).toLocaleString('he-IL')}</td>
+                  <td>{Number(row.returnQty).toLocaleString('he-IL', { maximumFractionDigits: 0 })}</td>
                   <td>{formatCurrency(row.returnAmount)}</td>
-                  <td>{Number(row.returnTickets).toLocaleString('he-IL')}</td>
+                  <td>{Number(row.returnTickets).toLocaleString('he-IL', { maximumFractionDigits: 0 })}</td>
                 </tr>
               ))}
             </ShowMoreTable>

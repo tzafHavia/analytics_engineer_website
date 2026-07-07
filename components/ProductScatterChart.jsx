@@ -77,7 +77,7 @@ export default function ProductScatterChart({ data = [] }) {
               tick={{ fill: '#94a3b8', fontSize: 11 }}
               tickLine={false}
               axisLine={false}
-              tickFormatter={(v) => `₪${Math.round(v / 1000)}k`}
+              tickFormatter={(v) => `₪${Number((v / 1000).toFixed(1))}k`}
               label={{ value: '30d sales (₪)', position: 'insideBottomRight', offset: -4, fill: '#64748b', fontSize: 11 }}
             />
             <YAxis
@@ -87,7 +87,7 @@ export default function ProductScatterChart({ data = [] }) {
               tick={{ fill: '#94a3b8', fontSize: 11 }}
               tickLine={false}
               axisLine={false}
-              tickFormatter={(v) => `₪${Math.round(v / 1000)}k`}
+              tickFormatter={(v) => `₪${Number((v / 1000).toFixed(1))}k`}
               width={64}
               label={{ value: 'Est. GP (₪)', angle: -90, position: 'insideLeft', offset: 14, fill: '#64748b', fontSize: 11 }}
             />

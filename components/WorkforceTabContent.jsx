@@ -24,7 +24,7 @@ function WorkforceKpiCard({ label, value, sub, color = 'cyan' }) {
 export default function WorkforceTabContent({ data }) {
   if (!data) return null;
 
-  const { employees = [], kpis, period, staffingVsSales = [], dailyEmployeeSales = [] } = data;
+  const { employees = [], kpis, period, staffingVsSales = [], dailyEmployeeSales = [], attributedSalesAllTime = false } = data;
 
   if (!employees.length) {
     return (
@@ -49,7 +49,9 @@ export default function WorkforceTabContent({ data }) {
     {
       label: 'Attributed sales',
       value: formatCurrency(kpis.totalAttributedSales),
-      sub: 'Team total (hour-share basis)',
+      sub: attributedSalesAllTime
+        ? 'Team total (hour-share) · all-time'
+        : `Team total (hour-share)${period?.label ? ` · ${period.label}` : ''}`,
       color: 'green',
     },
     {

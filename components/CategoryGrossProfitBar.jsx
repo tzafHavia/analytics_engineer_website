@@ -80,7 +80,7 @@ export default function CategoryGrossProfitBar({ data = [] }) {
               tick={{ fill: '#94a3b8', fontSize: 11 }}
               tickLine={false}
               axisLine={false}
-              tickFormatter={(v) => `₪${Math.round(v / 1000)}k`}
+              tickFormatter={(v) => `₪${Number((v / 1000).toFixed(1))}k`}
             />
             <YAxis
               type="category"

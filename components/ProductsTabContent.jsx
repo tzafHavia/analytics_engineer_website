@@ -13,6 +13,22 @@ function formatDoc(days) {
   return `${Number(days).toFixed(1)}d`;
 }
 
+/** Placeholder rows (unmapped/uncategorized) sort after real items. */
+function isPlaceholderRow(row) {
+  return (
+    row?.itemName === '(unmapped item)' ||
+    row?.categoryName === '(uncategorized)' ||
+    row?.name === '(uncategorized)'
+  );
+}
+
+/** Stable reorder: real items first, placeholder rows grouped at the bottom. */
+function realItemsFirst(rows = []) {
+  return [...rows].sort(
+    (left, right) => (isPlaceholderRow(left) ? 1 : 0) - (isPlaceholderRow(right) ? 1 : 0),
+  );
+}
+
 function ProductKpiCard({ label, value, sub, color = 'cyan' }) {
   return (
     <div className={`dash-kpi-card dash-kpi-${color}`}>
@@ -36,7 +52,9 @@ function VelocityBadge({ band }) {
 export default function ProductsTabContent({ data, filterOptions = {} }) {
   if (!data) return null;
 
-  const { kpis, topProducts, slowMovers, categoryData, scatterData, period } = data;
+  const { kpis, topProducts, scatterData, period } = data;
+  const slowMovers = realItemsFirst(data.slowMovers);
+  const categoryData = realItemsFirst(data.categoryData);
 
   const tabSelectors = [
     {
@@ -76,7 +94,7 @@ export default function ProductsTabContent({ data, filterOptions = {} }) {
     {
       label: 'Top product by units',
       value: kpis.topProductByUnits
-        ? `${Number(kpis.topProductByUnits.unitsSold).toLocaleString('he-IL')} units`
+        ? `${Number(kpis.topProductByUnits.unitsSold).toLocaleString('he-IL', { maximumFractionDigits: 0 })} units`
         : '—',
       sub: kpis.topProductByUnits ? kpis.topProductByUnits.itemName : 'No data',
       color: 'purple',
@@ -179,8 +197,8 @@ export default function ProductsTabContent({ data, filterOptions = {} }) {
                       <td>{row.itemName}</td>
                       <td>{row.categoryName}</td>
                       <td><VelocityBadge band={row.velocityBand} /></td>
-                      <td>{Number(row.soldQty30d).toLocaleString('he-IL')}</td>
-                      <td>{Number(row.inventoryQty).toLocaleString('he-IL')}</td>
+                      <td>{Number(row.soldQty30d).toLocaleString('he-IL', { maximumFractionDigits: 0 })}</td>
+                      <td>{Number(row.inventoryQty).toLocaleString('he-IL', { maximumFractionDigits: 0 })}</td>
                       <td>{formatDoc(row.daysOfCover30d)}</td>
                     </tr>
                   ))}
