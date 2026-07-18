@@ -1,33 +1,27 @@
-'use client';
-import { useState, useEffect } from 'react';
-import ProjectCard from '@/components/ProjectCard';
-import Loader from '@/components/Loader';
+import { supabase } from '@/lib/supabaseClient';
+import { mockProjects } from '@/lib/mockData';
+import ProjectsExplorer from '@/components/ProjectsExplorer';
 
-const ALL_TECHS = ['All', 'SQL', 'dbt', 'Python', 'Next.js', 'Supabase', 'Recharts'];
+export const metadata = {
+  title: 'Projects | Zafrir Havia — Analytics Engineer',
+  description:
+    'Analytics engineering projects: an end-to-end dbt + Supabase + Next.js analytics platform on real retail data, and a multi-system lead-capture integration.',
+};
 
-export default function ProjectsPage() {
-  const [projects, setProjects] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('All');
-  const [search, setSearch] = useState('');
+// Server component — the project list is resolved at render time so the initial
+// HTML always contains the flagship card (no client fetch, no "0 projects" flash).
+async function getProjects() {
+  try {
+    const { data, error } = await supabase.from('projects').select('*');
+    if (error || !data?.length) return mockProjects;
+    return data;
+  } catch (_) {
+    return mockProjects;
+  }
+}
 
-  useEffect(() => {
-    fetch('/api/projects')
-      .then((r) => r.json())
-      .then((data) => {
-        setProjects(Array.isArray(data) ? data : []);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, []);
-
-  const visible = projects.filter((p) => {
-    const matchesTech = filter === 'All' || p.tech?.includes(filter);
-    const matchesSearch =
-      p.title?.toLowerCase().includes(search.toLowerCase()) ||
-      p.description?.toLowerCase().includes(search.toLowerCase());
-    return matchesTech && matchesSearch;
-  });
+export default async function ProjectsPage() {
+  const projects = await getProjects();
 
   return (
     <div className="page-projects">
@@ -41,42 +35,7 @@ export default function ProjectsPage() {
         </p>
       </div>
 
-      {/* Controls */}
-      <div className="projects-controls">
-        <input
-          className="search-input"
-          placeholder="🔍  Search projects..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-        <div className="filter-pills">
-          {ALL_TECHS.map((t) => (
-            <button
-              key={t}
-              className={`filter-pill ${filter === t ? 'filter-pill-active' : ''}`}
-              onClick={() => setFilter(t)}
-            >
-              {t}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Grid */}
-      {loading ? (
-        <Loader text="Loading projects..." />
-      ) : visible.length === 0 ? (
-        <div className="empty-state">
-          <span>🔍</span>
-          <p>No projects match your filters.</p>
-        </div>
-      ) : (
-        <div className="projects-grid">
-          {visible.map((project) => (
-            <ProjectCard key={project.id} project={project} />
-          ))}
-        </div>
-      )}
+      <ProjectsExplorer projects={projects} />
     </div>
   );
 }

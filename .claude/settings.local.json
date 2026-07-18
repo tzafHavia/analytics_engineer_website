@@ -16,8 +16,6 @@
       "Bash(curl -s \"http://localhost:3000/projects/convenience-store/dashboard?productCategory=%D7%90%D7%9C%D7%9B%D7%95%D7%94%D7%95%D7%9C\")",
       "Bash(pkill -f \"next dev\")",
       "Bash(pkill -f \"next-server\")",
-      "Read(//mnt/f/.DATA-Analyst-Coures/.shlomy_store/full_project/store_pipeline/**)",
-      "Read(//mnt/f/.DATA-Analyst-Coures/.shlomy_store/full_project/**)",
       "Bash(grep -iE \"claude|agent|\\\\.md$|\\\\.cursor\")",
       "Bash(git check-ignore *)",
       "Bash(node -e \"const c=require\\('next/cache.js'\\); console.log\\('revalidateTag:', typeof c.revalidateTag\\)\")",

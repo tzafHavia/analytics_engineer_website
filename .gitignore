@@ -10,6 +10,14 @@
 !.yarn/releases
 !.yarn/versions
 
+#  my_stuff
+/linkedin_optimastion
+DOCUMENTATION.md
+WORK_PLAN.md
+WORK_LOG.md
+
+
+
 # testing
 /coverage
 

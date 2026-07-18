@@ -8,9 +8,7 @@ const navLinks = [
   { href: '/', label: 'Home' },
   { href: '/projects', label: 'Projects' },
   { href: '/projects/convenience-store/dashboard', label: 'Executive Dashboard' },
-  { href: '/payments', label: 'Payments' },
-  { href: '/crm', label: 'CRM Demo' },
-  { href: '/test-dash', label: 'test_dash' },
+  { href: '/dbt-docs/index.html', label: 'dbt Docs', external: true },
 ];
 
 export default function Navbar() {
@@ -37,15 +35,22 @@ export default function Navbar() {
 
         {/* Links */}
         <div className="navbar-links">
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`nav-link ${mounted && pathname === link.href ? 'nav-link-active' : ''}`}
-            >
-              {link.label}
-            </Link>
-          ))}
+          {navLinks.map((link) =>
+            link.external ? (
+              // Static asset (dbt docs) — plain <a> so the Next router doesn't intercept it
+              <a key={link.href} href={link.href} target="_blank" rel="noopener noreferrer" className="nav-link">
+                {link.label}
+              </a>
+            ) : (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`nav-link ${mounted && pathname === link.href ? 'nav-link-active' : ''}`}
+              >
+                {link.label}
+              </Link>
+            )
+          )}
         </div>
 
         {/* Theme toggle — desktop only */}

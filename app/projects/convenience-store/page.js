@@ -1,143 +1,35 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { fetchDailySales } from '@/lib/pgClient';
+import { fetchCaseStudyData } from '@/lib/dashboardData';
 import DailySalesChart from '@/components/DailySalesChart';
+import CaseStudyEmployeeHoursChart from '@/components/CaseStudyEmployeeHoursChart';
+import CaseStudyCategoryChart from '@/components/CaseStudyCategoryChart';
+import CaseStudyWeeklyTrendChart from '@/components/CaseStudyWeeklyTrendChart';
 
-// ─── Static chart placeholder ───────────────────────────────────────────────
-function ChartPlaceholder({ title, description, type = 'bar', height = 240 }) {
-  const bars =
-    type === 'bar'
-      ? [65, 82, 55, 90, 70, 78, 60, 95, 72, 85]
-      : type === 'line'
-      ? [40, 65, 50, 80, 60, 75, 55, 90, 70, 85]
-      : null;
+// ─── Formatting helpers (live KPI values) ────────────────────────────────────
+function fmtShekel(v, digits = 0) {
+  if (v == null) return null;
+  return `₪${Number(v).toLocaleString('he-IL', { maximumFractionDigits: digits })}`;
+}
 
-  return (
-    <div className="chart-placeholder">
-      <div className="chart-ph-header">
-        <span className="chart-ph-title">{title}</span>
-        <span className="chart-ph-badge">Live data coming soon</span>
-      </div>
-      <p className="chart-ph-desc">{description}</p>
+function fmtShekelCompact(v) {
+  if (v == null) return null;
+  return `₪${Number((v / 1000).toFixed(1))}k`;
+}
 
-      <div className="chart-ph-frame" style={{ height }}>
-        {/* Y-axis labels */}
-        <div className="chart-ph-y-axis">
-          {['100', '75', '50', '25', '0'].map((v) => (
-            <span key={v}>{v}</span>
-          ))}
-        </div>
-
-        {/* Chart area */}
-        <div className="chart-ph-area">
-          {/* Grid lines */}
-          <div className="chart-ph-grid">
-            {[0, 1, 2, 3, 4].map((i) => (
-              <div key={i} className="chart-ph-grid-line" />
-            ))}
-          </div>
-
-          {type === 'bar' && (
-            <div className="chart-ph-bars">
-              {bars.map((h, i) => (
-                <div
-                  key={i}
-                  className="chart-ph-bar"
-                  style={{
-                    height: `${h}%`,
-                    animationDelay: `${i * 80}ms`,
-                    background: `linear-gradient(to top, #6366f1, #22d3ee)`,
-                    opacity: 0.6 + i * 0.03,
-                  }}
-                />
-              ))}
-            </div>
-          )}
-
-          {type === 'line' && (
-            <svg
-              className="chart-ph-svg"
-              viewBox="0 0 220 100"
-              preserveAspectRatio="none"
-            >
-              <defs>
-                <linearGradient id={`lg-${title}`} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#6366f1" stopOpacity="0.4" />
-                  <stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
-                </linearGradient>
-              </defs>
-              <path
-                d="M0,60 L22,35 L44,50 L66,20 L88,40 L110,25 L132,45 L154,10 L176,30 L198,15 L220,5"
-                fill="none"
-                stroke="#22d3ee"
-                strokeWidth="2"
-              />
-              <path
-                d="M0,60 L22,35 L44,50 L66,20 L88,40 L110,25 L132,45 L154,10 L176,30 L198,15 L220,5 L220,100 L0,100 Z"
-                fill={`url(#lg-${title})`}
-              />
-            </svg>
-          )}
-
-          {type === 'hbar' && (
-            <div className="chart-ph-hbars">
-              {['Top Product', 'Category A', 'Category B', 'Category C', 'Other'].map(
-                (label, i) => (
-                  <div key={i} className="chart-ph-hbar-row">
-                    <span className="chart-ph-hbar-label">{label}</span>
-                    <div className="chart-ph-hbar-track">
-                      <div
-                        className="chart-ph-hbar-fill"
-                        style={{ width: `${80 - i * 13}%` }}
-                      />
-                    </div>
-                  </div>
-                )
-              )}
-            </div>
-          )}
-
-          {type === 'pie' && (
-            <div className="chart-ph-pie">
-              <svg viewBox="0 0 100 100" width="160" height="160">
-                <circle cx="50" cy="50" r="40" fill="none" stroke="#6366f1" strokeWidth="18" strokeDasharray="150 251" strokeDashoffset="0" />
-                <circle cx="50" cy="50" r="40" fill="none" stroke="#22d3ee" strokeWidth="18" strokeDasharray="60 251" strokeDashoffset="-150" />
-                <circle cx="50" cy="50" r="40" fill="none" stroke="#4ade80" strokeWidth="18" strokeDasharray="41 251" strokeDashoffset="-210" />
-              </svg>
-              <div className="chart-ph-pie-legend">
-                {['Sales', 'Costs', 'Profit'].map((l, i) => (
-                  <div key={i} className="chart-ph-legend-item">
-                    <span className={`chart-ph-legend-dot cs-dot-${i}`} />
-                    <span>{l}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* X-axis labels */}
-      {(type === 'bar' || type === 'line') && (
-        <div className="chart-ph-x-axis">
-          {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun', 'Mon', 'Tue', 'Wed'].map(
-            (d, i) => (
-              <span key={i}>{d}</span>
-            )
-          )}
-        </div>
-      )}
-    </div>
-  );
+function fmtPct(v, digits = 1) {
+  if (v == null) return null;
+  return `${Number(v).toFixed(digits)}%`;
 }
 
 // ─── Metric KPI card ─────────────────────────────────────────────────────────
-function MetricCard({ icon, label, value, sub, color }) {
+function MetricCard({ icon, label, value, sub, color, rtlValue = false }) {
   return (
     <div className={`cs-metric-card cs-metric-${color}`}>
       <span className="cs-metric-icon">{icon}</span>
       <p className="cs-metric-label">{label}</p>
-      <p className="cs-metric-value">{value}</p>
+      <p className="cs-metric-value" dir={rtlValue ? 'rtl' : undefined}>{value}</p>
       {sub && <p className="cs-metric-sub">{sub}</p>}
     </div>
   );
@@ -158,9 +50,9 @@ function PipelineStep({ icon, title, desc, color }) {
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 export const metadata = {
-  title: 'Convenience Store Analytics | DataPortfolio',
+  title: 'Convenience Store Analytics Platform | Zafrir Havia',
   description:
-    'End-to-end data platform transforming POS data into actionable business insights.',
+    'End-to-end analytics platform on real point-of-sale data: Python EL → dbt → Supabase → live Next.js dashboard, refreshed nightly.',
 };
 
 export default async function ConvenienceStorePage() {
@@ -170,6 +62,47 @@ export default async function ConvenienceStorePage() {
   } catch (_) {
     dailySales = [];
   }
+
+  // Live case-study metrics — computed from the same store_pipeline read-set the
+  // dashboard uses. Any null field simply drops its KPI card (never a "—").
+  let caseStudy = null;
+  try {
+    caseStudy = await fetchCaseStudyData();
+  } catch (_) {
+    caseStudy = null;
+  }
+  const kpis = caseStudy?.kpis ?? {};
+  const asOf = caseStudy?.asOf ?? null;
+
+  // KPI card definitions — value null → card not rendered (real values only).
+  const financialCards = [
+    { icon: '🛒', label: 'Avg. Basket Size', value: fmtShekel(kpis.avgBasketSize, 1), sub: 'Per transaction · 30d', color: 'purple' },
+    { icon: '⏱️', label: 'Revenue / Hour', value: fmtShekel(kpis.revenuePerHour), sub: 'Per trading hour · 30d', color: 'cyan' },
+    { icon: '📊', label: 'Gross Margin', value: fmtPct(kpis.grossMarginPct), sub: 'Estimated · 30d', color: 'green' },
+    { icon: '💳', label: 'Daily Revenue', value: fmtShekel(kpis.avgDailyRevenue), sub: 'Daily average · 30d', color: 'orange' },
+  ].filter((c) => c.value != null);
+
+  const productCards = [
+    {
+      icon: '🏆', label: 'Top SKU', value: kpis.topSkuName, rtlValue: true,
+      sub: kpis.topSkuRevenue != null ? `${fmtShekelCompact(kpis.topSkuRevenue)} · 30d revenue` : 'By 30d revenue',
+      color: 'purple',
+    },
+    { icon: '📉', label: 'Low Performers', value: kpis.lowPerformersCount != null ? Number(kpis.lowPerformersCount).toLocaleString('he-IL') : null, sub: 'Slow / no-recent-sales items', color: 'orange' },
+    {
+      icon: '🗂️', label: 'Top Category', value: kpis.topCategoryName, rtlValue: true,
+      sub: kpis.topCategorySharePct != null ? `${fmtPct(kpis.topCategorySharePct)} of 30d revenue` : 'By 30d revenue',
+      color: 'cyan',
+    },
+  ].filter((c) => c.value != null);
+
+  const timeCards = [
+    { icon: '📈', label: 'Peak Hour', value: kpis.peakHourLabel, sub: 'Highest sales · 30d', color: 'cyan' },
+    { icon: '📅', label: 'Peak Day', value: kpis.peakDayLabel, sub: 'Highest avg daily sales · 30d', color: 'green' },
+    { icon: '🌙', label: 'Evening Share', value: fmtPct(kpis.eveningSharePct), sub: 'Revenue rung 16:00+ · 30d', color: 'purple' },
+  ].filter((c) => c.value != null);
+
+  const hasAnyKpi = financialCards.length + productCards.length + timeCards.length > 0;
 
   return (
     <div className="cs-page">
@@ -184,21 +117,23 @@ export default async function ConvenienceStorePage() {
         <div className="cs-hero-inner">
           <div className="cs-hero-eyebrow">
             <span className="eyebrow-dot" />
-            Data Engineering · Analytics · Business Intelligence
+            Analytics Engineering · Data Modeling · Business Intelligence
           </div>
           <h1 className="cs-hero-title">
             Convenience Store
             <span className="hero-highlight"> Analytics Platform</span>
           </h1>
           <p className="cs-hero-subtitle">
-            A complete end-to-end data pipeline that transforms raw POS transactions
-            into actionable dashboards, automated reports, and financial insights — all
-            at zero vendor cost.
+            An end-to-end analytics platform built on real point-of-sale data from a working
+            convenience store — a client also served directly with recurring reports (weekly
+            sales-by-hour, employee hours, weekly/monthly summaries, and a year-end report).
+            Python EL → dbt → Supabase → live Next.js dashboard, refreshed nightly. The full
+            platform is a portfolio extension built on the same data.
           </p>
 
           {/* Tech badges */}
           <div className="card-tech-stack cs-hero-tech">
-            {['SQL', 'dbt', 'Supabase', 'Next.js', 'Python', 'Power BI'].map((t) => (
+            {['SQL', 'dbt', 'Supabase', 'Next.js', 'Python'].map((t) => (
               <span
                 key={t}
                 className={`tech-badge tech-${t.toLowerCase().replace('.', '').replace(' ', '')}`}
@@ -214,7 +149,7 @@ export default async function ConvenienceStorePage() {
               📊 Open Live Dashboard ↗
             </Link>
             <a
-              href="https://github.com/HomeDigSoftware/local_store_pipeline"
+              href="https://github.com/tzafHavia/local_store_pipeline"
               target="_blank"
               rel="noopener noreferrer"
               className="btn-outline"
@@ -229,9 +164,6 @@ export default async function ConvenienceStorePage() {
             >
               📚 dbt Docs ↗
             </a>
-            <span className="btn-outline" style={{ cursor: 'default', opacity: 0.5 }}>
-              Live Dashboard (coming soon)
-            </span>
           </div>
         </div>
 
@@ -240,7 +172,7 @@ export default async function ConvenienceStorePage() {
           <span className="card-status card-status-live">● Live Project</span>
           <span className="cs-scope-badge">🏪 Retail</span>
           <span className="cs-scope-badge">📊 BI</span>
-          <span className="cs-scope-badge">🔄 ETL</span>
+          <span className="cs-scope-badge">🔄 ELT</span>
         </div>
       </section>
 
@@ -250,22 +182,22 @@ export default async function ConvenienceStorePage() {
       <section className="cs-section">
         <h2 className="cs-section-title">Data Architecture</h2>
         <p className="cs-section-subtitle">
-          Raw POS data flows through a nightly ETL job into dbt transformations, lands
-          in Supabase, and surfaces through a Next.js API to interactive dashboards and
-          BI tools.
+          Raw POS data is extracted and loaded nightly (EL), transformed with dbt,
+          published to Supabase as a controlled read-set, and served through a Next.js
+          API to the live executive dashboard.
         </p>
 
         {/* Pipeline pills */}
         <div className="cs-pipeline">
-          <PipelineStep icon="🖥️" title="POS System" desc="Verifone – nightly export at 01:30 AM" color="blue" />
+          <PipelineStep icon="🖥️" title="POS System" desc="Verifone – nightly export at 03:00" color="blue" />
           <span className="cs-pipe-arrow">→</span>
-          <PipelineStep icon="🔧" title="dbt Models" desc="Staging · Marts · Metrics" color="orange" />
+          <PipelineStep icon="🔧" title="dbt Models" desc="Staging · Intermediate · Marts" color="orange" />
           <span className="cs-pipe-arrow">→</span>
           <PipelineStep icon="⚡" title="Supabase" desc="PostgreSQL data warehouse" color="green" />
           <span className="cs-pipe-arrow">→</span>
           <PipelineStep icon="▲" title="Next.js API" desc="Controlled data access layer" color="purple" />
           <span className="cs-pipe-arrow">→</span>
-          <PipelineStep icon="📊" title="Dashboards" desc="Power BI · Tableau · Custom UI" color="cyan" />
+          <PipelineStep icon="📊" title="Dashboards" desc="Next.js Executive Dashboard (5 views)" color="cyan" />
         </div>
 
         {/* Architecture image */}
@@ -279,8 +211,30 @@ export default async function ConvenienceStorePage() {
             priority
           />
           <p className="cs-arch-caption">
-            Fig 1. End-to-End Data Pipeline Architecture — POS → dbt → Supabase → API → BI
+            Fig 1. End-to-End Data Pipeline Architecture — POS → dbt → Supabase → API → Dashboard
           </p>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════
+          BY THE NUMBERS  (verified engineering facts)
+      ══════════════════════════════════════════════════════════════ */}
+      <section className="cs-section">
+        <h2 className="cs-section-title">By the Numbers</h2>
+        <p className="cs-section-subtitle">
+          Verified engineering facts from the pipeline repository.
+        </p>
+        <div className="kpi-section cs-metrics-row">
+          <MetricCard icon="🔧" label="dbt Models" value="42" sub="Staging → intermediate → marts" color="purple" />
+          <MetricCard icon="✅" label="Data Tests" value="220+" sub="Freshness · uniqueness · reconciliation" color="green" />
+          <MetricCard icon="🕐" label="SCD Type-2 Snapshots" value="2" sub="Price history · inventory balance" color="cyan" />
+          <MetricCard icon="🌙" label="Nightly Run" value="03:00" sub="Extract → dbt build → publish → revalidate" color="orange" />
+        </div>
+        <div className="kpi-section cs-metrics-row" style={{ marginTop: '1rem' }}>
+          <MetricCard icon="📦" label="Published Read-Set" value="20 tables" sub="Copy-only DML · zero DDL in prod" color="cyan" />
+          <MetricCard icon="⚙️" label="CI Pipeline" value="~45s" sub="Full dbt build + tests on seeded fixture" color="purple" />
+          <MetricCard icon="🗜️" label="Prod Slimming" value="539 → 8" sub="Raw tables (PostgREST storm diagnosed)" color="orange" />
+          <MetricCard icon="💾" label="Database Size" value="116 → 46 MB" sub="After the free-tier IO cutover" color="green" />
         </div>
       </section>
 
@@ -330,7 +284,8 @@ export default async function ConvenienceStorePage() {
       <section className="cs-section">
         <h2 className="cs-section-title">Business Requirements</h2>
         <p className="cs-section-subtitle">
-          The client defined three types of recurring business reports.
+          The client defined three types of recurring business reports — these are the
+          deliverables served directly to the client on an ongoing basis.
         </p>
         <div className="cs-req-grid">
           <div className="cs-req-card cs-req-monthly">
@@ -374,18 +329,18 @@ export default async function ConvenienceStorePage() {
       <section className="cs-section">
         <h2 className="cs-section-title">Solution</h2>
         <p className="cs-section-subtitle">
-          I built a robust, scalable data pipeline designed to transform raw operational
-          data into actionable business intelligence. By leveraging the Modern Data Stack,
-          this project automates the journey from cloud storage to a high-level executive
-          dashboard.
+          I built a robust, scalable data platform that turns raw operational data into
+          reliable reporting. The client receives the recurring reports built on this
+          pipeline; the dbt project and live dashboard extend the same data into a
+          full portfolio-grade analytics platform.
         </p>
         <div className="cs-solution-grid">
           {[
-            { icon: '🔄', title: 'Automated Ingestion', desc: 'Nightly ETL job extracts POS backups at 01:30 AM and loads raw data into the local database.' },
-            { icon: '🔧', title: 'dbt Transformations', desc: 'Staging models clean and normalize raw data. Mart models build fact and dimension tables. Metric models compute business KPIs.' },
-            { icon: '⚡', title: 'Supabase Warehouse', desc: 'Transformed data is stored in a structured PostgreSQL database on Supabase, ready for fast querying.' },
+            { icon: '🔄', title: 'Automated Ingestion (EL)', desc: 'Nightly job extracts POS backups at 03:00 and loads raw data into the warehouse — extract and load first, transform downstream.' },
+            { icon: '🔧', title: 'dbt Transformations (T)', desc: 'Staging models clean and normalize raw data. Mart models build fact and dimension tables. Metric models compute business KPIs.' },
+            { icon: '⚡', title: 'Supabase Warehouse', desc: 'Transformed data is published to a structured PostgreSQL database on Supabase as a controlled 20-table read-set.' },
             { icon: '▲', title: 'Next.js API Layer', desc: 'A controlled API layer exposes the data to the dashboard UI, with filtering and pagination built in.' },
-            { icon: '📊', title: 'Interactive Dashboards', desc: 'Business users can view sales trends, employee stats, inventory snapshots, and weekly summaries in real time.' },
+            { icon: '📊', title: 'Live Executive Dashboard', desc: 'Five interactive views — Overview, Sales, Inventory, Products, Workforce — refreshed nightly from the pipeline.' },
           ].map((s, i) => (
             <div key={i} className="cs-solution-step">
               <div className="cs-solution-num">{i + 1}</div>
@@ -445,9 +400,10 @@ export default async function ConvenienceStorePage() {
             <div>
               <h4 className="cs-td-title">Visual Intelligence</h4>
               <p className="cs-td-desc">
-                Created an interactive <strong>Tableau dashboard</strong> that translates
-                raw numbers into a visual story, allowing stakeholders to drill down from
-                high-level KPIs to specific product performance.
+                Built a custom <strong>Next.js + Recharts executive dashboard</strong> with
+                five live views (Overview, Sales, Inventory, Products, Workforce) reading a
+                20-table published Supabase read-set — URL-based tabs, global date/category
+                filters, and nightly cache revalidation.
               </p>
             </div>
           </div>
@@ -455,13 +411,14 @@ export default async function ConvenienceStorePage() {
       </section>
 
       {/* ══════════════════════════════════════════════════════════════
-          KEY DASHBOARDS  (chart placeholders)
+          KEY DASHBOARDS  (live data)
       ══════════════════════════════════════════════════════════════ */}
       <section className="cs-section">
         <h2 className="cs-section-title">Key Dashboards</h2>
         <p className="cs-section-subtitle">
-          Four dashboard views are planned. Chart areas will populate from live Supabase
-          data once the pipeline is connected.
+          Four of the platform&rsquo;s views, rendered here from the live Supabase read-set
+          {asOf ? ` (data as of ${asOf})` : ''}. The full five-view dashboard is one
+          click away.
         </p>
 
         <div className="cs-dashboards-grid">
@@ -472,102 +429,90 @@ export default async function ConvenienceStorePage() {
               <span>🏪</span> Sales Performance Dashboard
             </div>
             <p className="cs-db-desc">
-              Daily revenue totals computed from <code>shlomy_store.payments_complete</code> —
+              Daily revenue totals computed from <code>store_pipeline.rpt_daily_sales</code> —
               each bar represents one trading day.
             </p>
             <DailySalesChart data={dailySales} />
           </div>
 
-          {/* Dashboard 2 — Employee */}
+          {/* Dashboard 2 — Employee (Live) */}
           <div className="cs-dashboard-block">
             <div className="cs-db-label">
               <span>👥</span> Employee Analytics Dashboard
             </div>
             <p className="cs-db-desc">
-              Total hours per employee, salary estimation, and productivity (sales per
-              hour worked).
+              Total worked hours per employee from the workforce productivity summary —
+              the same source behind the dashboard&rsquo;s Workforce view.
             </p>
-            <ChartPlaceholder
-              title="Hours Worked per Employee"
-              description="Horizontal bar showing employee hour distribution"
-              type="hbar"
-              height={220}
-            />
+            <CaseStudyEmployeeHoursChart data={caseStudy?.employeeHours ?? []} />
           </div>
 
-          {/* Dashboard 3 — Inventory */}
+          {/* Dashboard 3 — Inventory / Products (Live) */}
           <div className="cs-dashboard-block">
             <div className="cs-db-label">
-              <span>📦</span> Inventory Insights Dashboard
+              <span>📦</span> Category Revenue Contribution
             </div>
             <p className="cs-db-desc">
-              Stock levels, fast vs slow moving products, and inventory turnover rate.
+              Trailing 30-day revenue share by product category, live from the category
+              performance mart.
             </p>
-            <ChartPlaceholder
-              title="Category Revenue Contribution"
-              description="Pie chart showing contribution by product category"
-              type="pie"
-              height={220}
-            />
+            <CaseStudyCategoryChart data={caseStudy?.categoryRevenue ?? []} />
           </div>
 
-          {/* Dashboard 4 — Weekly Summary */}
+          {/* Dashboard 4 — Weekly Summary (Live) */}
           <div className="cs-dashboard-block">
             <div className="cs-db-label">
               <span>📅</span> Weekly Summary Dashboard
             </div>
             <p className="cs-db-desc">
-              Daily breakdown of revenue, costs, and profit. Top 10 products per day
-              every Sunday.
+              Weekly net sales and ticket counts (last 12 weeks) — mirroring the weekly
+              summary report delivered to the client every Sunday.
             </p>
-            <ChartPlaceholder
-              title="Profit Trend (last 7 days)"
-              description="Line chart showing daily profit over the past week"
-              type="line"
-              height={220}
-            />
+            <CaseStudyWeeklyTrendChart data={caseStudy?.weeklyTrend ?? []} />
           </div>
 
         </div>
       </section>
 
       {/* ══════════════════════════════════════════════════════════════
-          ADVANCED METRICS  (placeholder values)
+          ADVANCED METRICS  (live values)
       ══════════════════════════════════════════════════════════════ */}
-      <section className="cs-section">
-        <h2 className="cs-section-title">Advanced Metrics & KPIs</h2>
-        <p className="cs-section-subtitle">
-          Beyond the base requirements — deeper KPIs implemented to surface more business
-          value.
-        </p>
+      {hasAnyKpi && (
+        <section className="cs-section">
+          <h2 className="cs-section-title">Advanced Metrics & KPIs</h2>
+          <p className="cs-section-subtitle">
+            Computed live from the reporting tables over the trailing 30 days
+            {asOf ? ` (as of ${asOf})` : ''}.
+          </p>
 
-        {/* Financial */}
-        <h3 className="cs-metrics-group-title">💰 Financial</h3>
-        <div className="kpi-section cs-metrics-row">
-          <MetricCard icon="🛒" label="Avg. Basket Size" value="—" sub="Per transaction" color="purple" />
-          <MetricCard icon="⏱️" label="Revenue / Hour" value="—" sub="Operating hours" color="cyan" />
-          <MetricCard icon="📊" label="Profit Margin" value="—" sub="Gross %" color="green" />
-          <MetricCard icon="💳" label="Daily Revenue" value="—" sub="Average" color="orange" />
-        </div>
+          {financialCards.length > 0 && (
+            <>
+              <h3 className="cs-metrics-group-title">💰 Financial</h3>
+              <div className="kpi-section cs-metrics-row">
+                {financialCards.map((c) => <MetricCard key={c.label} {...c} />)}
+              </div>
+            </>
+          )}
 
-        {/* Product */}
-        <h3 className="cs-metrics-group-title" style={{ marginTop: '2rem' }}>🛒 Product Analytics</h3>
-        <div className="kpi-section cs-metrics-row">
-          <MetricCard icon="🏆" label="Top SKU" value="—" sub="By revenue" color="purple" />
-          <MetricCard icon="📉" label="Low Performers" value="—" sub="Items to review" color="orange" />
-          <MetricCard icon="🗂️" label="Top Category" value="—" sub="Revenue share" color="cyan" />
-          <MetricCard icon="🔄" label="Turnover Rate" value="—" sub="Inventory cycles" color="green" />
-        </div>
+          {productCards.length > 0 && (
+            <>
+              <h3 className="cs-metrics-group-title" style={{ marginTop: '2rem' }}>🛒 Product Analytics</h3>
+              <div className="kpi-section cs-metrics-row">
+                {productCards.map((c) => <MetricCard key={c.label} {...c} />)}
+              </div>
+            </>
+          )}
 
-        {/* Time */}
-        <h3 className="cs-metrics-group-title" style={{ marginTop: '2rem' }}>⏰ Time-Based Insights</h3>
-        <div className="kpi-section cs-metrics-row">
-          <MetricCard icon="📈" label="Peak Hour" value="—" sub="Highest traffic" color="cyan" />
-          <MetricCard icon="📅" label="Peak Day" value="—" sub="Best sales day" color="green" />
-          <MetricCard icon="🌙" label="Evening Share" value="—" sub="% of daily revenue" color="purple" />
-          <MetricCard icon="📆" label="Best Week" value="—" sub="Month-to-date" color="orange" />
-        </div>
-      </section>
+          {timeCards.length > 0 && (
+            <>
+              <h3 className="cs-metrics-group-title" style={{ marginTop: '2rem' }}>⏰ Time-Based Insights</h3>
+              <div className="kpi-section cs-metrics-row">
+                {timeCards.map((c) => <MetricCard key={c.label} {...c} />)}
+              </div>
+            </>
+          )}
+        </section>
+      )}
 
       {/* ══════════════════════════════════════════════════════════════
           KEY INSIGHTS
@@ -576,10 +521,10 @@ export default async function ConvenienceStorePage() {
         <h2 className="cs-section-title">Key Insights</h2>
         <div className="insights-list">
           {[
-            'A small number of products generated a large portion of total revenue (Pareto principle confirmed)',
-            'Peak sales hours consistently occurred in the evening, across all days of the week',
-            'Some high-cost products had low sales volume, significantly reducing overall profitability',
-            'Employee productivity varied significantly between shifts and individuals',
+            'Revenue is heavily concentrated: the top category alone accounts for roughly two-thirds of trailing-30-day sales (Pareto principle confirmed)',
+            'Overnight hours (~00:30–05:30) consistently failed to cover wages — especially weekends at premium shift pay — which drove the two-shift staffing recommendation',
+            'A long tail of slow and no-recent-sales items ties up inventory capital — surfaced as a live "low performers" count and a dead-stock action list',
+            'Employee productivity varied significantly between shifts and individuals — attributed sales per worked hour make the gap visible',
           ].map((ins, i) => (
             <div key={i} className="insight-item">
               <span className="insight-bullet">✦</span>
@@ -596,7 +541,8 @@ export default async function ConvenienceStorePage() {
         <h2 className="cs-section-title">Business Impact</h2>
         <div className="cs-impact-grid">
           {[
-            { icon: '�', title: 'Inventory Optimization', desc: 'Identifying "dead stock" vs. high-velocity items to improve cash flow and reduce overstock.' },
+            { icon: '💡', title: 'Data-Driven Staffing Decision', desc: 'Analysis of hourly sales vs. shift costs showed overnight hours (~00:30–05:30) consistently failed to cover wages — especially weekends at 150%+ shift pay. The store sits in an industrial zone: traffic drops sharply after evening and surrounding businesses close on weekends. Recommended replacing 24/7 operation (three 8-hour shifts) with two shifts (05:00–15:00 / 15:00–00:00). Adopted as a 3-month trial in January 2026 and permanent since — night-shift and weekend premiums eliminated, fewer employees needed, less scheduling pressure.' },
+            { icon: '📦', title: 'Inventory Optimization', desc: 'Identifying "dead stock" vs. high-velocity items to improve cash flow and reduce overstock.' },
             { icon: '⚡', title: 'Operational Clarity', desc: 'Reducing the time spent on manual reporting from hours to seconds — management gets weekly data-backed reports automatically.' },
             { icon: '✅', title: 'Data Integrity', desc: 'Automated dbt testing ensures that business decisions are never based on "dirty" or duplicated data.' },
             { icon: '💰', title: 'Zero Vendor Cost', desc: 'Completely eliminated the need for expensive Verifone reporting add-ons.' },
@@ -623,8 +569,8 @@ export default async function ConvenienceStorePage() {
             { name: 'dbt', icon: '🔧', desc: 'Modular data transformation' },
             { name: 'Supabase', icon: '⚡', desc: 'PostgreSQL data warehouse' },
             { name: 'Next.js', icon: '▲', desc: 'Frontend + API layer' },
-            { name: 'Python', icon: '🐍', desc: 'ETL scripts & data processing' },
-            { name: 'Power BI', icon: '📊', desc: 'Visualization & BI reports' },
+            { name: 'Python', icon: '🐍', desc: 'EL scripts & data processing' },
+            { name: 'Recharts', icon: '📊', desc: 'Interactive dashboard charting' },
           ].map((t) => (
             <div key={t.name} className="tech-item">
               <span className="tech-item-icon">{t.icon}</span>
@@ -639,7 +585,7 @@ export default async function ConvenienceStorePage() {
 
       {/* ── Bottom nav ───────────────────────────────────────────────────── */}
       <div className="detail-actions" style={{ marginTop: '3rem' }}>
-        <a href="https://github.com/HomeDigSoftware/local_store_pipeline" target="_blank" rel="noopener noreferrer" className="btn-primary">
+        <a href="https://github.com/tzafHavia/local_store_pipeline" target="_blank" rel="noopener noreferrer" className="btn-primary">
           View on GitHub ↗
         </a>
         <Link href="/projects" className="btn-ghost">← Back to Projects</Link>

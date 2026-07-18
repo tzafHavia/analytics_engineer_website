@@ -15,6 +15,7 @@ const categoryIcons = {
   Marketing: '📣',
   Finance: '💳',
   Analytics: '📈',
+  Integration: '🔗',
 };
 
 const categoryGradients = {
@@ -22,6 +23,7 @@ const categoryGradients = {
   Marketing: 'linear-gradient(135deg, rgba(251,146,60,0.25), rgba(250,204,21,0.1))',
   Finance: 'linear-gradient(135deg, rgba(74,222,128,0.2), rgba(34,211,238,0.12))',
   Analytics: 'linear-gradient(135deg, rgba(99,102,241,0.2), rgba(139,92,246,0.15))',
+  Integration: 'linear-gradient(135deg, rgba(0,212,170,0.2), rgba(79,140,255,0.12))',
 };
 
 export default function ProjectCard({ project }) {
